@@ -31,5 +31,32 @@ class SkillLayoutTest(unittest.TestCase):
         self.assertIn("架空", csv_text)
 
 
+    def test_folder_input_workflow_and_examples_are_present(self) -> None:
+        skill_dir = ROOT / ".agents/skills/software-estimation"
+        skill = (skill_dir / "SKILL.md").read_text(encoding="utf-8")
+        guide = (skill_dir / "references/folder-input.md").read_text(encoding="utf-8")
+        self.assertIn("references/folder-input.md", skill)
+        for phrase in ("request.json", "sources.md", "estimate.json", "estimate.md", "wbs.csv"):
+            self.assertIn(phrase, guide)
+        self.assertIn("python -m estimator calculate", guide)
+        self.assertIn(".estimates/", (ROOT / ".gitignore").read_text(encoding="utf-8"))
+
+        docs_dir = ROOT / "examples/folder-input-demo"
+        requirements = (docs_dir / "requirements.md").read_text(encoding="utf-8")
+        architecture = (docs_dir / "architecture.md").read_text(encoding="utf-8")
+        self.assertIn("F-001", requirements)
+        self.assertIn("NF-001", requirements)
+        self.assertIn("Cloudflare D1", architecture)
+
+    def test_readmes_explain_folder_input_limitations(self) -> None:
+        for name in ("README.md", "README.en.md"):
+            with self.subTest(name=name):
+                content = (ROOT / name).read_text(encoding="utf-8")
+                self.assertIn("examples/folder-input-demo/", content)
+                self.assertIn(".estimates/", content)
+                self.assertIn("references/folder-input.md", content)
+                self.assertIn("request.json", content)
+
+
 if __name__ == "__main__":
     unittest.main()
