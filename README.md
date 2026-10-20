@@ -1,5 +1,7 @@
 # software-estimation-skills
 
+**言語 / Language:** **日本語** | [English](README.en.md)
+
 ソフトウェア開発の要件から、工数・費用・開発期間を分けて見積もるための Agent Skills です。過去の開発実績が無い段階でも、WBSと明示した仮定から見積もりを作れます。実績が増えたあとは、同じ入口のまま類似案件の実績を主方式に切り替えられます。
 
 計算は Python 標準ライブラリの十進演算で行います。LLMは要件の分解と三点の起草を担当し、楽観値・最頻値・悲観値・期待値・費用・期間の計算はスクリプトが検証します。
@@ -207,6 +209,6 @@ python -m pip install skills-ref==0.1.1
 python -m estimator validate-skills
 ```
 
-この環境では単体テスト58件と `validate-skills` の構成検証が成功しています。`skills-ref` 0.1.1 はこの実行環境にインストールされていないため、公式バリデータのローカル実行は未確認です。GitHub Actions は `.github/workflows/test.yml` で公式検証を行います。
+PR #1 の最新 GitHub Actions では単体テスト62件と、`skills-ref` 0.1.1 による公式検証が成功しています。Cursor／Codex上でのSkill起動は未確認です。GitHub Actions の設定は `.github/workflows/test.yml` にあります。
 
 例の `estimate.md` と `estimate.json` は、依頼JSONから再計算した結果とテストで比較します。数値を手で直した場合、テストが失敗します。
