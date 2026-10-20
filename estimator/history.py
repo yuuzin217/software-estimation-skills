@@ -12,6 +12,7 @@ from estimator.policy import (
     ANOMALY_RATIO_HIGH,
     ANOMALY_RATIO_LOW,
     CATEGORY_JACCARD_MIN,
+    MAX_SIZE_EXTRAPOLATION_FACTOR,
     HISTORICAL_PRIMARY_MIN_RECORDS,
     SIMILARITY_THRESHOLD,
 )
@@ -156,6 +157,7 @@ def evaluate_history(
         )
     bag.raise_if_any()
 
+    size_extrapolation = _apply_size_extrapolation(evaluated, target_size)
     usable = [item for item in evaluated if item["usable_for_scaling"]]
     similar = [item for item in evaluated if item["above_threshold"] and item["valid"]]
     return {
@@ -166,6 +168,7 @@ def evaluate_history(
         "allow_fictional": allow_fictional,
         "include_anomalies": include_anomalies,
         "fictional_records_present": any(item["fictional"] for item in evaluated),
+        "size_extrapolation": size_extrapolation,
         "records": evaluated,
         "can_be_primary": len(usable) >= HISTORICAL_PRIMARY_MIN_RECORDS,
     }
@@ -264,8 +267,18 @@ def _evaluate_record(
             exclusion.append(
                 f"類似度 {similarity['similarity']} が方針上の下限 {exact_str(SIMILARITY_THRESHOLD)} 未満です。"
             )
+        scope_match = bool(similarity["project_scope_match"])
+        if not scope_match:
+            exclusion.append(
+                "project_scope が一致しません"
+                f"（対象 {profile.get('project_scope') or '未指定'}、実績 {scope or '未指定'}）。"
+                "開発工程が異なる可能性があるため規模按分には使いません。"
+            )
     elif valid:
+        scope_match = None
         exclusion.append("comparison_profile が無いため類似度を計算できません。")
+    else:
+        scope_match = None
 
     converted = None
     if valid and actual is not None and record_unit is not None:
@@ -304,6 +317,7 @@ def _evaluate_record(
         "similarity": None if similarity is None else similarity["similarity"],
         "similarity_components": None if similarity is None else similarity["components"],
         "similarity_notes": [] if similarity is None else similarity["notes"],
+        "project_scope_match": scope_match,
         "type_cap_applied": False if similarity is None else similarity["type_cap_applied"],
         "above_threshold": bool(
             similarity is not None and Decimal(similarity["similarity"]) >= SIMILARITY_THRESHOLD
@@ -319,6 +333,47 @@ def _evaluate_record(
         "work_categories": categories,
         "notes": raw.get("notes") or "",
     }
+
+
+def _apply_size_extrapolation(records: list[dict], target_size: dict | None) -> dict:
+    """有効実績の観測範囲から2倍を超える外挿を、按分候補から外す。"""
+    candidates = [item for item in records if item["usable_for_scaling"] and item["size"]]
+    if target_size is None or not candidates:
+        return {
+            "status": "not_assessed",
+            "reason": "規模按分に使える実績が無いため、外挿範囲を評価できません。",
+            "max_extrapolation_factor": exact_str(MAX_SIZE_EXTRAPOLATION_FACTOR),
+        }
+
+    values = [Decimal(item["size"]["value"]) for item in candidates]
+    observed_min = min(values)
+    observed_max = max(values)
+    target = Decimal(target_size["value"])
+    allowed_min = observed_min / MAX_SIZE_EXTRAPOLATION_FACTOR
+    allowed_max = observed_max * MAX_SIZE_EXTRAPOLATION_FACTOR
+    shared = {
+        "target_size": exact_str(target),
+        "size_kind": target_size["kind"],
+        "observed_min": exact_str(observed_min),
+        "observed_max": exact_str(observed_max),
+        "allowed_min": exact_str(allowed_min),
+        "allowed_max": exact_str(allowed_max),
+        "max_extrapolation_factor": exact_str(MAX_SIZE_EXTRAPOLATION_FACTOR),
+        "note": "有効実績の最小・最大規模から上下2倍以内とする本ツール独自の方針です。公的基準ではありません。",
+    }
+    if allowed_min <= target <= allowed_max:
+        return {"status": "within_range", "reason": "対象規模は本ツールの外挿範囲内です。", **shared}
+
+    reason = (
+        f"対象規模 {exact_str(target)} は、有効実績の観測範囲 {exact_str(observed_min)}〜"
+        f"{exact_str(observed_max)} から許容する2倍範囲 {exact_str(allowed_min)}〜"
+        f"{exact_str(allowed_max)} を外れるため、規模按分には使いません。"
+    )
+    for item in candidates:
+        item["usable_for_scaling"] = False
+        item["unit_rate"] = None
+        item["exclusion_reasons"].append(reason)
+    return {"status": "rejected", "reason": reason, **shared}
 
 
 def build_historical_estimate(evaluation: dict, target_size: dict | None, effort_unit: str) -> dict:

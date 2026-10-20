@@ -50,6 +50,8 @@ def score_similarity(profile: dict, record: dict) -> dict:
     components["project_scope"] = "1" if scope_match else "0"
     if scope_match:
         score += SIMILARITY_WEIGHTS["project_scope"]
+    else:
+        notes.append("project_scope が一致しない実績は規模按分に使いません。")
 
     technology = jaccard(
         list(profile.get("technology_stack") or []),
@@ -87,6 +89,7 @@ def score_similarity(profile: dict, record: dict) -> dict:
         "similarity_exact": score_str(round_score(score)),
         "components": components,
         "category_jaccard": None if category_score is None else score_str(category_score),
+        "project_scope_match": scope_match,
         "type_cap_applied": capped,
         "notes": notes,
     }

@@ -1,5 +1,9 @@
 """見積もり結果のMarkdown。数値は計算結果だけを使い、ここでは再計算しない。"""
 
+import csv
+import io
+import unicodedata
+
 
 def render_markdown(result: dict) -> str:
     lines: list[str] = ["# 見積もり結果", ""]
@@ -61,6 +65,19 @@ def render_markdown(result: dict) -> str:
             lines.append(f"- {item['id']} {item['name']}: {item['reason']}")
     lines.append("")
 
+    coverage = result["coverage"]
+    lines.extend(["## 網羅性", "", f"状態: {coverage['status']}。{coverage['note']}"])
+    if coverage["status"] == "historical_project_estimate":
+        lines.append(f"照合用WBSの網羅性: {coverage['wbs_status']}。historical方式による案件全体の見積もりには影響しません。")
+    for label, key in (
+        ("WBSに対応していない要件", "uncovered_requirement_ids"),
+        ("算定可能な作業がない要件", "unestimated_requirement_ids"),
+        ("未算定WBS", "unestimated_wbs_ids"),
+    ):
+        values = coverage[key]
+        lines.append(f"- {label}: {', '.join(values) if values else 'なし'}")
+    lines.append("")
+
     lines.extend(["## WBS", ""])
     if result["wbs"]["cross_check_only"]:
         lines.append("このWBS合計は照合用です。計画工数には加算していません。")
@@ -110,14 +127,17 @@ def render_markdown(result: dict) -> str:
         lines.append(f"計画工数は未算定です。{summary['reason']}")
     else:
         unit = _unit_label(summary["effort_unit"])
+        scope_label = "全体見積もり" if summary["estimate_scope"] == "project" else "部分見積もり"
+        planned_label = "計画工数" if summary["estimate_scope"] == "project" else "部分見積もり工数"
         lines.extend(
             [
+                f"- 見積範囲: {scope_label}",
                 f"- 楽観工数合計: {summary['optimistic']} {unit}",
                 f"- 最頻工数合計: {summary['most_likely']} {unit}",
                 f"- 悲観工数合計: {summary['pessimistic']} {unit}",
                 f"- 期待工数合計: {summary['expected']} {unit}",
                 f"- 予備工数: {summary['contingency']} {unit}",
-                f"- 計画工数: {summary['planned']} {unit}",
+                f"- {planned_label}: {summary['planned']} {unit}",
                 f"- 主根拠: {summary['primary_basis']}",
                 f"- 集計の説明: {summary['reason']}",
             ]
@@ -125,7 +145,10 @@ def render_markdown(result: dict) -> str:
         if summary["planned_differs_from_expected"]:
             lines.append(f"- 期待工数と計画工数が異なる理由: {summary['planned_difference_reason']}")
         else:
-            lines.append("- 期待工数と計画工数は同じです。独立した予備工数はありません。")
+            if summary["estimate_scope"] == "partial":
+                lines.append("- 期待工数と部分見積もり工数は同じです。算定済み項目だけの合計です。")
+            else:
+                lines.append("- 期待工数と計画工数は同じです。独立した予備工数はありません。")
         lines.append(f"- 丸め: {summary['rounding']['note']}（{summary['rounding']['mode']}、小数第2位）")
     lines.append("")
 
@@ -214,6 +237,7 @@ def render_markdown(result: dict) -> str:
     lines.append(f"- 類似度の下限: {policy['similarity_threshold']}")
     lines.append(f"- historical を主方式にする最少件数: {policy['minimum_records_for_historical_primary']}")
     lines.append(f"- 規模按分に必要な工程の重なり: {policy['minimum_category_jaccard_for_scaling']}")
+    lines.append(f"- 規模外挿の上限: 有効実績の観測範囲から上下{policy['maximum_size_extrapolation_factor']}倍")
     lines.append(f"- {policy['note']}")
     lines.extend(["", "### 実績データ", ""])
     history = result["history_evaluation"]
@@ -221,6 +245,15 @@ def render_markdown(result: dict) -> str:
         f"読込 {history['loaded_count']} 件、有効 {history['valid_count']} 件、"
         f"類似度が下限以上 {history['similar_count']} 件、規模按分に使用 {history['usable_for_scaling_count']} 件。"
     )
+    extrapolation = history["size_extrapolation"]
+    lines.append(f"規模外挿の評価: {extrapolation['status']}。{extrapolation['reason']}")
+    if extrapolation.get("allowed_min") is not None:
+        lines.append(
+            f"- 対象規模 {extrapolation['target_size']}。有効実績 {extrapolation['observed_min']}〜"
+            f"{extrapolation['observed_max']}、許容範囲 {extrapolation['allowed_min']}〜"
+            f"{extrapolation['allowed_max']}（上下{extrapolation['max_extrapolation_factor']}倍）。"
+        )
+        lines.append(f"- 方針: {extrapolation['note']}")
     historical = result["historical_estimate"]
     lines.append(f"実績見積もり: {historical['status']}。{historical.get('reason', '')}")
     if historical["status"] == "calculated":
@@ -291,6 +324,78 @@ def render_markdown(result: dict) -> str:
         ]
     )
     return "\n".join(lines)
+
+
+CSV_COLUMNS = [
+    "WBS ID",
+    "要件ID",
+    "工程",
+    "作業名",
+    "作業内容",
+    "楽観工数",
+    "最頻工数",
+    "悲観工数",
+    "期待工数",
+    "工数単位",
+    "算定状態",
+    "根拠区分",
+    "算定根拠",
+    "不確実性",
+    "採用区分",
+    "未算定理由",
+]
+
+
+def render_csv(result: dict) -> str:
+    """WBS明細をExcel向けUTF-8 CSVとして出力する。工数はJSONと同じ表示値を使う。"""
+    output = io.StringIO(newline="")
+    writer = csv.writer(output, lineterminator="\r\n")
+    writer.writerow(CSV_COLUMNS)
+    for item in result["wbs"]["lines"]:
+        basis = item.get("basis") or {}
+        estimable = item["estimable"]
+        text_values = [
+            item["id"],
+            ", ".join(item["requirement_ids"]),
+            item["phase"],
+            item["name"],
+            item["description"],
+        ]
+        effort_values = [
+            item.get("optimistic") if estimable else "",
+            item.get("most_likely") if estimable else "",
+            item.get("pessimistic") if estimable else "",
+            item.get("expected") if estimable else "",
+        ]
+        trailing_text = [
+            item["effort_unit"],
+            "算定済み" if estimable else "未算定",
+            basis.get("kind", ""),
+            basis.get("explanation", ""),
+            item.get("uncertainty") or "",
+            "照合用" if result["wbs"]["cross_check_only"] else "計画工数対象",
+            item.get("blocked_reason") or "",
+        ]
+        writer.writerow(
+            [_safe_excel_text(value) for value in text_values]
+            + effort_values
+            + [_safe_excel_text(value) for value in trailing_text]
+        )
+    # A UTF-8 BOM helps Excel identify Japanese text when the file is opened directly.
+    return "\ufeff" + output.getvalue()
+
+
+def _safe_excel_text(value: object) -> str:
+    """Escape text cells that Excel could interpret as formulas after leading controls."""
+    text = "" if value is None else str(value)
+    for character in text:
+        category = unicodedata.category(character)
+        if character.isspace() or category.startswith("C") or category.startswith("Z"):
+            continue
+        if character in "=+-@":
+            return "'" + text
+        break
+    return text
 
 
 def _write_scope_items(lines: list[str], items: list[dict]) -> None:

@@ -67,10 +67,14 @@ examples/case-e-missing-rate/request.json の入力を、software-estimation の
 エージェントは依頼JSONを作り、リポジトリルートで次を実行します。
 
 ```bash
-python -m estimator calculate --input request.json --output estimate.md --json-output estimate.json
+python -m estimator calculate \
+  --input request.json \
+  --json-output estimate.json \
+  --output estimate.md \
+  --csv-output wbs.csv
 ```
 
-終了コードが0のMarkdownに含まれる数値を結果にします。
+終了コードが0の出力を結果にします。JSONを正本とし、その計算結果からMarkdownとCSVを生成します。
 
 この作業環境では、Cursorの画面上でSkillが一覧に出ることまでは確認していません。確認したのは、公式の `skills-ref` 0.1.1 による frontmatter 検証と、上記コマンドによる計算です。
 
@@ -88,7 +92,7 @@ Codexのドキュメントでは、リポジトリ内の `.agents/skills` をSki
 | --- | --- |
 | `examples/case-a-new-web` | 実績がない新規Web。統計の条件が合わず照合しない |
 | `examples/case-b-similar-history` | 類似する架空実績が3件。実績を主方式にする |
-| `examples/case-c-ambiguous` | 要件が曖昧。未算定を残し、幅を広げる |
+| `examples/case-c-ambiguous` | 要件が曖昧。未算定を残し、部分見積もりとして示す |
 | `examples/case-d-dissimilar-history` | 実績はあるが種別が違う。按分しない |
 | `examples/case-e-missing-rate` | 単価と人数が不明。工数だけ出す |
 | `examples/case-f-non-functional` | 非機能を独立項目にし、予備を三点と分離する |
@@ -124,7 +128,30 @@ Codexのドキュメントでは、リポジトリ内の `.agents/skills` をSki
 
 ケースAは、実績が無い新規Webの例です。計画工数は 27.17 人日、指定単価 80,000 円での費用は 2,173,333.33 円、人数2・稼働率0.6から求めた経過日数の下限は 22.64 日です。この日数は確定期間ではありません。費用は、表示上の 27.17 人日ではなく、丸める前の計画工数に単価を掛けてから丸めています。三点の人日は AI の暫定推定であり、標準生産性でもIPAの値でもありません。全文は [examples/case-a-new-web/estimate.md](examples/case-a-new-web/estimate.md) です。
 
-機械可読な結果は、各例の `estimate.json` です。ExcelとPDFの出力はありません。
+機械可読な結果は、各例の `estimate.json` です。JSONには、対象範囲、前提、要件、WBS、O/M/P、PERT期待値、丸め前と表示用の計画工数、網羅性、未算定項目、リスク、費用、期間、方式、実績の採否を含めます。MarkdownとCSVはこの構造化結果を表示するだけで、工数を再計算しません。
+
+### 出力ファイル
+
+- `estimate.json`: 見積もりデータの正本。`*_exact` は丸め前、表示用の値は最後に小数第2位へ丸めます。
+- `estimate.md`: 概要、対象範囲、前提、網羅性、WBS、工数、費用、期間、リスク、根拠、未算定項目、再見積もり条件を含むレポートです。
+- `wbs.csv`: WBS ID、要件ID、工程、作業名・内容、O/M/P/PERT、単位、算定状態、根拠、不確実性、採用区分を含みます。工数はJSONと同じ表示値です。未算定工数は空欄で、理由を別列に記録します。
+
+CSVの列:
+
+| 列 | 内容 |
+| --- | --- |
+| WBS ID / 要件ID | 作業IDと対応要件ID |
+| 工程 / 作業名 / 作業内容 | WBSの分類と明細 |
+| 楽観工数 / 最頻工数 / 悲観工数 / 期待工数 | JSONと同じ表示用工数 |
+| 工数単位 / 算定状態 | `person_day` または `person_hour`、算定済みまたは未算定 |
+| 根拠区分 / 算定根拠 / 不確実性 | 根拠の種類、説明、low・medium・high |
+| 採用区分 / 未算定理由 | 計画工数対象または照合用、未算定の場合の理由 |
+
+CSVはUTF-8（BOM付き）です。Excelで直接開くと日本語が読みやすくなります。CSVのクォートはカンマ、引用符、改行を保つための書式で、数式の実行防止とは別です。ユーザー由来の文字列は、先頭の空白・制御文字を除いて `=`, `+`, `-`, `@` で始まる場合に先頭へアポストロフィを付け、Excelが数式として解釈しないようにします。
+
+WBSを積み上げるcold-start方式では、機能要件と非機能要件が算定可能なWBSに対応し、未算定WBSがない場合だけ全体見積もりになります。対応要件が抜けている、または未算定WBSがある場合、網羅性を `partial` とし、部分見積もり工数だけを表示します。対象全体の費用と期間は算出しません。historical方式は案件全体を対象にするため、WBSは照合用として扱い、網羅性の判定で主見積もりを狭めません。
+
+実績による規模按分は、`project_scope` が一致することを必須にします。さらに、有効実績の最小・最大規模から上下2倍を超える対象への外挿を避けます。この2倍は本ツール独自の安全策で、IPAなどの公式基準ではありません。範囲外ではhistoricalを採用せず、cold-startへ切り替えます。
 
 ## 見積もり根拠の扱い
 
@@ -178,6 +205,6 @@ python -m pip install skills-ref==0.1.1
 python -m estimator validate-skills
 ```
 
-この環境では、`skills-ref` 0.1.1 による3 Skillの検証と、単体テスト47件が成功しています。GitHub Actions は `.github/workflows/test.yml` で同じ確認を行います。
+この環境では単体テスト58件と `validate-skills` の構成検証が成功しています。`skills-ref` 0.1.1 はこの実行環境にインストールされていないため、公式バリデータのローカル実行は未確認です。GitHub Actions は `.github/workflows/test.yml` で公式検証を行います。
 
 例の `estimate.md` と `estimate.json` は、依頼JSONから再計算した結果とテストで比較します。数値を手で直した場合、テストが失敗します。

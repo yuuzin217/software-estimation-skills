@@ -87,6 +87,8 @@ def summarize_wbs(items: list[dict], effort_unit: str) -> dict:
             "status": "not_calculated",
             "reason": "算定できるWBS項目がありません。",
             "effort_unit": effort_unit,
+            "estimable_count": 0,
+            "unestimated_count": len(items),
             "lines": items,
         }
     optimistic = sum(Decimal(item["optimistic_exact"]) for item in estimable)
@@ -98,6 +100,8 @@ def summarize_wbs(items: list[dict], effort_unit: str) -> dict:
         "status": "calculated",
         "reason": "",
         "effort_unit": effort_unit,
+        "estimable_count": len(estimable),
+        "unestimated_count": len(items) - len(estimable),
         "optimistic_exact": exact_str(optimistic),
         "most_likely_exact": exact_str(most_likely),
         "pessimistic_exact": exact_str(pessimistic),

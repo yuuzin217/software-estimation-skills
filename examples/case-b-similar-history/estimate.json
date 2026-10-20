@@ -45,6 +45,7 @@
       "similarity_threshold": "0.60",
       "minimum_records_for_historical_primary": 3,
       "minimum_category_jaccard_for_scaling": "0.50",
+      "maximum_size_extrapolation_factor": "2",
       "similarity_weights": {
         "project_type": "0.35",
         "project_scope": "0.20",
@@ -61,6 +62,18 @@
     "usable_for_scaling_count": 3,
     "fictional_records_present": true,
     "can_be_primary": true,
+    "size_extrapolation": {
+      "status": "within_range",
+      "reason": "対象規模は本ツールの外挿範囲内です。",
+      "target_size": "8",
+      "size_kind": "feature_count",
+      "observed_min": "6",
+      "observed_max": "10",
+      "allowed_min": "3",
+      "allowed_max": "20",
+      "max_extrapolation_factor": "2",
+      "note": "有効実績の最小・最大規模から上下2倍以内とする本ツール独自の方針です。公的基準ではありません。"
+    },
     "records": [
       {
         "project_id": "DEMO-001",
@@ -76,6 +89,7 @@
           "technology": "1.0000",
           "work_categories": "1.0000"
         },
+        "project_scope_match": true,
         "type_cap_applied": false,
         "above_threshold": true,
         "usable_for_scaling": true,
@@ -97,6 +111,7 @@
           "technology": "1.0000",
           "work_categories": "1.0000"
         },
+        "project_scope_match": true,
         "type_cap_applied": false,
         "above_threshold": true,
         "usable_for_scaling": true,
@@ -118,6 +133,7 @@
           "technology": "1.0000",
           "work_categories": "1.0000"
         },
+        "project_scope_match": true,
         "type_cap_applied": false,
         "above_threshold": true,
         "usable_for_scaling": true,
@@ -211,6 +227,8 @@
       }
     ],
     "cross_check_only": true,
+    "estimable_count": 1,
+    "unestimated_count": 0,
     "optimistic": "10.00",
     "most_likely": "12.00",
     "pessimistic": "16.00",
@@ -255,7 +273,28 @@
       "effort_places": 2,
       "money_places": 2,
       "note": "合計は丸める前の値を加算し、最後に一度だけ丸めます。"
-    }
+    },
+    "estimate_scope": "project"
+  },
+  "coverage": {
+    "status": "historical_project_estimate",
+    "basis": "historical",
+    "is_total_estimate": true,
+    "wbs_status": "complete",
+    "required_requirement_ids": [
+      "F-001"
+    ],
+    "mapped_requirement_ids": [
+      "F-001"
+    ],
+    "estimated_requirement_ids": [
+      "F-001"
+    ],
+    "uncovered_requirement_ids": [],
+    "unestimated_requirement_ids": [],
+    "unestimated_wbs_ids": [],
+    "unscoped_unestimated_wbs_ids": [],
+    "note": "主方式は案件全体を対象にするhistorical見積もりです。WBSは照合用で、WBS網羅性は主見積もりを制限しません。"
   },
   "cost": {
     "status": "not_calculated",

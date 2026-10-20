@@ -93,6 +93,9 @@ class PertAndValidationTest(unittest.TestCase):
         result = calculate(request)
         self.assertEqual(result["summary"]["expected"], "2.00")
         self.assertEqual(result["unestimated_items"][0]["id"], "WBS-002")
+        self.assertEqual(result["coverage"]["status"], "partial")
+        self.assertEqual(result["coverage"]["unestimated_wbs_ids"], ["WBS-002"])
+        self.assertEqual(result["summary"]["estimate_scope"], "partial")
 
     def test_percent_derivation_and_overlap_warning(self) -> None:
         request = minimal_request()
@@ -296,6 +299,8 @@ class PertAndValidationTest(unittest.TestCase):
         ]
         result = calculate(request)
         self.assertEqual(result["summary"]["status"], "not_calculated")
+        self.assertEqual(result["coverage"]["status"], "partial")
+        self.assertEqual(result["coverage"]["unestimated_requirement_ids"], ["F-001"])
         markdown = render_markdown(result)
         self.assertIn("## 工数サマリー", markdown)
         self.assertIn("未算定", markdown)

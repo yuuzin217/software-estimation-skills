@@ -14,6 +14,7 @@ from estimator.numbers import effort_str, exact_str, money_str, optional_decimal
 from estimator.policy import (
     CATEGORY_JACCARD_MIN,
     HISTORICAL_PRIMARY_MIN_RECORDS,
+    MAX_SIZE_EXTRAPOLATION_FACTOR,
     POLICY_NOTE,
     SIMILARITY_THRESHOLD,
     SIMILARITY_WEIGHTS,
@@ -95,25 +96,32 @@ def calculate(data: dict, *, base_dir: Path | None = None) -> dict:
         historical,
         contingency,
     )
-    warnings = _warnings(wbs, wbs_summary, evaluation, historical, method, assumptions, risks, contingency)
+    coverage = _estimate_coverage(scope, wbs_summary, method, historical)
+    warnings = _warnings(wbs, wbs_summary, evaluation, historical, method, assumptions, risks, contingency, coverage)
     summary = _primary_summary(method, wbs_summary, historical, contingency, effort_unit)
+    summary["estimate_scope"] = "project" if coverage["is_total_estimate"] else "partial"
     if summary["status"] != "calculated" and not any(not item["estimable"] for item in wbs):
         raise EstimationError(
             [summary["reason"] or "見積もり可能なWBSも、採用できる実績もありません。"]
         )
     benchmark = evaluate_benchmark(data.get("benchmark"))
+    total_effort = summary.get("planned_exact") if coverage["is_total_estimate"] else None
     cost = calculate_cost(
         data.get("cost"),
-        summary.get("planned_exact"),
+        total_effort,
         effort_unit,
         Decimal(hours) if hours else None,
     )
     schedule = calculate_schedule(
         data.get("schedule"),
-        summary.get("planned_exact"),
+        total_effort,
         effort_unit,
         Decimal(hours) if hours else None,
     )
+    if not coverage["is_total_estimate"]:
+        reason = "WBSの網羅性が不完全なため、対象全体の費用・期間は算出しません。"
+        cost = {"status": "not_calculated", "reason": reason}
+        schedule = {"status": "not_calculated", "reason": reason}
     return _present(
         meta=meta,
         scope=scope,
@@ -125,6 +133,7 @@ def calculate(data: dict, *, base_dir: Path | None = None) -> dict:
         wbs_summary=wbs_summary,
         historical=historical,
         summary=summary,
+        coverage=coverage,
         cost=cost,
         schedule=schedule,
         warnings=warnings,
@@ -408,11 +417,17 @@ def _select_method(
             f"類似し規模按分できる実績が {evaluation['usable_for_scaling_count']} 件あり、"
             f"方針の {HISTORICAL_PRIMARY_MIN_RECORDS} 件以上を満たすため historical を主方式にしました。"
         )
-    elif evaluation["usable_for_scaling_count"] >= 1 or evaluation["similar_count"] >= 1:
+    elif evaluation["usable_for_scaling_count"] >= 1:
         primary = "cold-start"
         reason = (
             "利用できる実績はありますが、主方式に必要な件数または規模の対応が不足するため、"
             "cold-start を主方式とし、実績は補助参照にします。"
+        )
+    elif evaluation["similar_count"] >= 1:
+        primary = "cold-start"
+        reason = (
+            "類似度の下限を満たす実績はありますが、project_scope、規模範囲、工程、単位など"
+            "按分条件を満たさないため、cold-start を主方式にしました。"
         )
     else:
         primary = "cold-start"
@@ -424,7 +439,7 @@ def _select_method(
         )
     if primary == "historical":
         auxiliary = "cold-start" if cold_ready else "none"
-    elif historical.get("status") == "calculated" or evaluation["similar_count"] >= 1:
+    elif historical.get("status") == "calculated":
         auxiliary = "historical"
     else:
         auxiliary = "none"
@@ -439,6 +454,7 @@ def _select_method(
             "similarity_threshold": exact_str(SIMILARITY_THRESHOLD),
             "minimum_records_for_historical_primary": HISTORICAL_PRIMARY_MIN_RECORDS,
             "minimum_category_jaccard_for_scaling": exact_str(CATEGORY_JACCARD_MIN),
+            "maximum_size_extrapolation_factor": exact_str(MAX_SIZE_EXTRAPOLATION_FACTOR),
             "similarity_weights": {key: exact_str(value) for key, value in SIMILARITY_WEIGHTS.items()},
             "note": POLICY_NOTE,
         },
@@ -489,6 +505,73 @@ def _primary_summary(method: dict, wbs_summary: dict, historical: dict, continge
         difference_reason=difference_reason,
         primary_basis=wbs_summary["primary_basis"],
     )
+
+
+def _estimate_coverage(scope: dict, wbs_summary: dict, method: dict, historical: dict) -> dict:
+    """WBS coverage is required for cold-start; historical estimates cover the project independently."""
+    requirements = scope["functions"] + scope["non_functional"]
+    required_ids = [item["id"] for item in requirements]
+    lines = wbs_summary.get("lines", [])
+    required_set = set(required_ids)
+    mapped: set[str] = set()
+    estimated: set[str] = set()
+    unestimated_ids: list[str] = []
+    unscoped_unestimated_ids: list[str] = []
+    for item in lines:
+        linked = {req for req in item["requirement_ids"] if req in required_set}
+        mapped.update(linked)
+        if item["estimable"]:
+            estimated.update(linked)
+        else:
+            unestimated_ids.append(item["id"])
+            if not linked:
+                unscoped_unestimated_ids.append(item["id"])
+    uncovered = [req for req in required_ids if req not in mapped]
+    unestimated_requirements = [req for req in required_ids if req in mapped and req not in estimated]
+    mapped_ids = [req for req in required_ids if req in mapped]
+    estimated_ids = [req for req in required_ids if req in estimated]
+    if not lines:
+        wbs_status = "not_provided"
+    elif not uncovered and not unestimated_ids and wbs_summary.get("status") == "calculated":
+        wbs_status = "complete"
+    else:
+        wbs_status = "partial"
+
+    historical_primary = method["primary"] == "historical" and historical.get("status") == "calculated"
+    if historical_primary:
+        status = "historical_project_estimate"
+        is_total = True
+        note = "主方式は案件全体を対象にするhistorical見積もりです。WBSは照合用で、WBS網羅性は主見積もりを制限しません。"
+        basis = "historical"
+    elif wbs_status == "complete":
+        status = "complete"
+        is_total = True
+        note = "機能要件・非機能要件が算定可能なWBSに対応し、未算定WBSもありません。"
+        basis = "wbs"
+    elif lines or required_ids:
+        status = "partial"
+        is_total = False
+        note = "WBSの網羅性が不完全です。計画工数は算定済み項目だけの部分見積もりです。"
+        basis = "wbs"
+    else:
+        status = "not_assessed"
+        is_total = False
+        note = "要件とWBSがないため、見積もり範囲の網羅性を評価できません。"
+        basis = "wbs"
+    return {
+        "status": status,
+        "basis": basis,
+        "is_total_estimate": is_total,
+        "wbs_status": wbs_status,
+        "required_requirement_ids": required_ids,
+        "mapped_requirement_ids": mapped_ids,
+        "estimated_requirement_ids": estimated_ids,
+        "uncovered_requirement_ids": uncovered,
+        "unestimated_requirement_ids": unestimated_requirements,
+        "unestimated_wbs_ids": unestimated_ids,
+        "unscoped_unestimated_wbs_ids": unscoped_unestimated_ids,
+        "note": note,
+    }
 
 
 def _summary_dict(
@@ -542,6 +625,7 @@ def _warnings(
     assumptions: list[dict],
     risks: list[dict],
     contingency: dict,
+    coverage: dict,
 ) -> list[str]:
     warnings = []
     if evaluation.get("fictional_records_present"):
@@ -550,6 +634,16 @@ def _warnings(
         warnings.append("主方式の工数にはAIによる暫定推定が含まれます。精度が高い見積もりではありません。")
     if historical.get("status") == "calculated" and historical.get("provisional"):
         warnings.append(historical["provisional_reason"])
+    if coverage["status"] == "partial":
+        details = []
+        if coverage["uncovered_requirement_ids"]:
+            details.append("WBS未対応要件: " + ", ".join(coverage["uncovered_requirement_ids"]))
+        if coverage["unestimated_wbs_ids"]:
+            details.append("未算定WBS: " + ", ".join(coverage["unestimated_wbs_ids"]))
+        suffix = "（" + "、".join(details) + "）" if details else ""
+        warnings.append("網羅性が部分的です。工数は全体の確定値ではありません。費用・期間も算出していません。" + suffix)
+    elif coverage["basis"] == "historical" and coverage["wbs_status"] != "complete":
+        warnings.append("historical方式は案件全体の見積もりです。照合用WBSは未提示または不完全で、主方式の工数には加算していません。")
     if not assumptions and any(item.get("provisional") for item in wbs):
         warnings.append("暫定の工数がありますが、前提条件が空です。")
     for risk in risks:
@@ -584,6 +678,7 @@ def _present(
     wbs_summary: dict,
     historical: dict,
     summary: dict,
+    coverage: dict,
     cost: dict,
     schedule: dict,
     warnings: list[str],
@@ -609,6 +704,7 @@ def _present(
             "covered_risk_ids": contingency["covered_risk_ids"],
         },
         "summary": summary,
+        "coverage": coverage,
         "cost": _public_cost(cost),
         "schedule": _public_schedule(schedule),
         "warnings": warnings,
@@ -633,6 +729,7 @@ def _public_history(evaluation: dict) -> dict:
                 "anomaly_reason": item["anomaly_reason"],
                 "similarity": item["similarity"],
                 "similarity_components": item["similarity_components"],
+                "project_scope_match": item["project_scope_match"],
                 "type_cap_applied": item["type_cap_applied"],
                 "above_threshold": item["above_threshold"],
                 "usable_for_scaling": item["usable_for_scaling"],
@@ -648,6 +745,7 @@ def _public_history(evaluation: dict) -> dict:
         "usable_for_scaling_count": evaluation["usable_for_scaling_count"],
         "fictional_records_present": evaluation["fictional_records_present"],
         "can_be_primary": evaluation["can_be_primary"],
+        "size_extrapolation": evaluation["size_extrapolation"],
         "records": records,
     }
 
@@ -731,6 +829,8 @@ def _public_wbs(summary: dict, *, cross_check_only: bool) -> dict:
         "effort_unit": summary["effort_unit"],
         "lines": lines,
         "cross_check_only": cross_check_only,
+        "estimable_count": summary.get("estimable_count", 0),
+        "unestimated_count": summary.get("unestimated_count", 0),
     }
     if summary["status"] == "calculated":
         public.update(

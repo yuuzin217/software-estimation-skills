@@ -64,6 +64,84 @@ class HistoryAndBenchmarkTest(unittest.TestCase):
         self.assertTrue(result["history_evaluation"]["records"][0]["type_cap_applied"])
         self.assertLess(Decimal(result["history_evaluation"]["records"][0]["similarity"]), Decimal("0.60"))
 
+    def test_project_scope_mismatch_is_a_hard_gate(self) -> None:
+        request = minimal_request()
+        request["comparison_profile"] = comparison_profile()
+        request["target_size"] = {"kind": "feature_count", "value": "8"}
+        request["history"] = {
+            "allow_fictional": True,
+            "records": [
+                _similar(f"P-{index}", "30", str(size)) | {"project_scope": "enhancement"}
+                for index, size in enumerate((6, 8, 10), start=1)
+            ],
+        }
+        result = calculate(request)
+        self.assertEqual(result["method"]["primary"], "cold-start")
+        self.assertEqual(result["method"]["auxiliary"], "none")
+        self.assertEqual(result["history_evaluation"]["similar_count"], 3)
+        self.assertEqual(result["history_evaluation"]["usable_for_scaling_count"], 0)
+        for record in result["history_evaluation"]["records"]:
+            self.assertFalse(record["project_scope_match"])
+            self.assertTrue(any("project_scope" in reason for reason in record["exclusion_reasons"]))
+
+    def test_historical_scale_envelope_accepts_nearby_and_boundary_sizes(self) -> None:
+        for target in ("8", "12", "3", "20"):
+            with self.subTest(target=target):
+                request = minimal_request()
+                request["comparison_profile"] = comparison_profile()
+                request["target_size"] = {"kind": "feature_count", "value": target}
+                request["history"] = {
+                    "allow_fictional": True,
+                    "records": [_similar("P-001", "30", "6"), _similar("P-002", "40", "8"), _similar("P-003", "50", "10")],
+                }
+                result = calculate(request)
+                self.assertEqual(result["method"]["primary"], "historical")
+                self.assertEqual(result["history_evaluation"]["size_extrapolation"]["status"], "within_range")
+
+    def test_extreme_scale_extrapolation_falls_back_to_cold_start(self) -> None:
+        for target in ("8000", "1", "2.99", "20.01"):
+            with self.subTest(target=target):
+                request = minimal_request()
+                request["comparison_profile"] = comparison_profile()
+                request["target_size"] = {"kind": "feature_count", "value": target}
+                request["history"] = {
+                    "allow_fictional": True,
+                    "records": [_similar("P-001", "30", "6"), _similar("P-002", "40", "8"), _similar("P-003", "50", "10")],
+                }
+                result = calculate(request)
+                self.assertEqual(result["method"]["primary"], "cold-start")
+                self.assertEqual(result["history_evaluation"]["size_extrapolation"]["status"], "rejected")
+                self.assertEqual(result["history_evaluation"]["usable_for_scaling_count"], 0)
+                self.assertEqual(result["historical_estimate"]["status"], "not_calculated")
+                self.assertTrue(any("許容する2倍範囲" in reason for reason in result["history_evaluation"]["records"][0]["exclusion_reasons"]))
+
+    def test_historical_primary_coverage_is_independent_of_cross_check_wbs(self) -> None:
+        request = minimal_request()
+        request["scope"]["non_functional"] = [
+            {"id": "NF-001", "name": "可用性", "description": "夜間も利用できる"}
+        ]
+        request["comparison_profile"] = comparison_profile()
+        request["target_size"] = {"kind": "feature_count", "value": "8"}
+        request["history"] = {
+            "allow_fictional": True,
+            "records": [_similar("P-001", "30", "6"), _similar("P-002", "40", "8"), _similar("P-003", "50", "10")],
+        }
+        request["cost"] = {
+            "rate": "80000",
+            "rate_unit": "per_person_day",
+            "currency": "JPY",
+            "rate_basis": {"kind": "ASSUMPTION", "explanation": "テスト用に指定した単価"},
+        }
+        request["schedule"] = {"team_size": "2", "utilization": "0.6"}
+        result = calculate(request)
+        self.assertEqual(result["method"]["primary"], "historical")
+        self.assertEqual(result["coverage"]["status"], "historical_project_estimate")
+        self.assertTrue(result["coverage"]["is_total_estimate"])
+        self.assertEqual(result["coverage"]["wbs_status"], "partial")
+        self.assertEqual(result["coverage"]["uncovered_requirement_ids"], ["NF-001"])
+        self.assertEqual(result["cost"]["status"], "calculated")
+        self.assertNotEqual(result["schedule"]["status"], "not_calculated")
+
     def test_one_similar_record_is_auxiliary_only(self) -> None:
         request = minimal_request()
         request["comparison_profile"] = comparison_profile()

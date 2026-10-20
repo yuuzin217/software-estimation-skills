@@ -36,11 +36,14 @@ python -m estimator validate-history --input history.json
 
 2. 欠損、単位、0以下の工数、重複IDを直す。異常値（実績が見積の5倍以上または0.2倍未満）は既定で按分から外れる。外す理由を結果に残し、黙って削除したことにしない。
 3. 人時と人日が混在する実績には、その実績自身の `hours_per_person_day` を書く。8時間や160時間を補わない。
-4. 対象案件の `comparison_profile` と `target_size` を書く。規模の種類が実績と違う場合は按分しない。
+4. 対象案件の `comparison_profile` と `target_size` を書く。`project_scope`（新規、改修など）の一致を必須とする。規模の種類が実績と違う場合は按分しない。
 5. [references/similarity.md](references/similarity.md) の採用条件を満たすか確認する。満たさない実績を係数で寄せない。
 6. 採用できる類似実績が3件未満、または規模按分できない場合は、WBSを [cold-start-estimation](../cold-start-estimation/SKILL.md) で作り、実績は補助にする。
+   対象規模が有効実績の最小・最大規模から上下2倍を超える場合は、外挿を避けてcold-startへ切り替える。この倍率は本ツール独自の方針で、公式基準ではない。
 7. 3件以上が規模按分できる場合だけ historical を主方式にできる。WBSを併記してもよいが、合計へは足さない。
-8. リポジトリルートで `python -m estimator calculate` を実行し、終了コード0の出力を結果にする。
+8. リポジトリルートで `python -m estimator calculate --input request.json --json-output estimate.json --output estimate.md --csv-output wbs.csv` を実行し、終了コード0の出力を結果にする。
+
+historical方式は案件全体の見積もりであり、併記するWBSは照合用である。WBSが未算定または未網羅でも、historical主見積もりの工数・費用・期間は変えない。ただし照合用WBSの状態は結果に表示する。
 
 ## 完了後の記録
 

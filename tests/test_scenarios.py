@@ -10,7 +10,7 @@ from estimator.render import render_markdown
 
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = ROOT / "examples"
-HEADINGS = ["## 基本情報", "## スコープ", "## WBS", "## 工数サマリー", "## 費用", "## 開発期間", "## リスク", "## 根拠", "## 補足"]
+HEADINGS = ["## 基本情報", "## スコープ", "## 網羅性", "## WBS", "## 工数サマリー", "## 費用", "## 開発期間", "## リスク", "## 根拠", "## 補足"]
 
 
 def load_case(name: str) -> dict:
@@ -47,6 +47,11 @@ class ScenarioTest(unittest.TestCase):
         self.assertEqual(result["method"]["primary"], "cold-start")
         self.assertGreaterEqual(len(result["scope"]["unknowns"]), 2)
         self.assertEqual(result["unestimated_items"][0]["id"], "WBS-002")
+        self.assertEqual(result["coverage"]["status"], "partial")
+        self.assertFalse(result["coverage"]["is_total_estimate"])
+        self.assertEqual(result["summary"]["estimate_scope"], "partial")
+        self.assertEqual(result["cost"]["status"], "not_calculated")
+        self.assertEqual(result["schedule"]["status"], "not_calculated")
         line = result["wbs"]["lines"][0]
         self.assertGreaterEqual(Decimal(line["pessimistic_exact"]) / Decimal(line["optimistic_exact"]), Decimal(5))
         self.assertTrue(line["provisional"])

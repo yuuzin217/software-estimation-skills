@@ -2,14 +2,16 @@
 
 import argparse
 import json
+import os
 import sys
+import tempfile
 from pathlib import Path
 
 from estimator.catalog import list_entries
 from estimator.engine import calculate
 from estimator.errors import EstimationError
 from estimator.history import evaluate_history, load_history_document
-from estimator.render import render_markdown
+from estimator.render import render_csv, render_markdown
 from estimator.skills_check import validate_skills
 
 
@@ -17,10 +19,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="estimator", description="ソフトウェア開発見積もりの検証と計算")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    calc = sub.add_parser("calculate", help="依頼JSONを検証し、MarkdownとJSONを出力する")
+    calc = sub.add_parser("calculate", help="依頼JSONを検証し、Markdown・JSON・CSVを出力する")
     calc.add_argument("--input", required=True, help="依頼JSONのパス")
     calc.add_argument("--output", help="Markdownの出力先。省略時は標準出力")
     calc.add_argument("--json-output", help="機械可読JSONの出力先")
+    calc.add_argument("--csv-output", help="WBS明細CSVの出力先")
 
     history = sub.add_parser("validate-history", help="実績CSV/JSONの品質だけを確認する")
     history.add_argument("--input", required=True)
@@ -55,16 +58,64 @@ def _calculate(args: argparse.Namespace) -> int:
     data = json.loads(input_path.read_text(encoding="utf-8"))
     result = calculate(data, base_dir=input_path.parent)
     markdown = render_markdown(result)
+    outputs: list[tuple[Path, str]] = []
     if args.output:
-        Path(args.output).write_text(markdown, encoding="utf-8")
-    else:
-        print(markdown)
+        outputs.append((Path(args.output), markdown))
     if args.json_output:
-        Path(args.json_output).write_text(
-            json.dumps(result, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
+        outputs.append((Path(args.json_output), json.dumps(result, ensure_ascii=False, indent=2) + "\n"))
+    if args.csv_output:
+        outputs.append((Path(args.csv_output), render_csv(result)))
+    _write_output_files(outputs)
+    if not args.output:
+        print(markdown)
     return 0
+
+
+def _write_output_files(outputs: list[tuple[Path, str]]) -> None:
+    """Stage every output first, then atomically replace targets with rollback on failure."""
+    targets = [target for target, _ in outputs]
+    resolved = [path.resolve(strict=False) for path in targets]
+    if len(set(resolved)) != len(resolved):
+        raise EstimationError(["Markdown、JSON、CSVの出力先は別々のファイルにしてください。"])
+
+    originals: dict[Path, bytes | None] = {}
+    staged: list[tuple[Path, Path]] = []
+    replaced: list[Path] = []
+    try:
+        for target, content in outputs:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            originals[target] = target.read_bytes() if target.exists() else None
+            fd, temp_name = tempfile.mkstemp(prefix=f".{target.name}.", suffix=".tmp", dir=target.parent)
+            temp_path = Path(temp_name)
+            staged.append((target, temp_path))
+            with os.fdopen(fd, "w", encoding="utf-8", newline="") as handle:
+                handle.write(content)
+                handle.flush()
+                os.fsync(handle.fileno())
+        for target, temp_path in staged:
+            os.replace(temp_path, target)
+            replaced.append(target)
+    except OSError:
+        for target in reversed(replaced):
+            previous = originals[target]
+            if previous is None:
+                target.unlink(missing_ok=True)
+            else:
+                fd, rollback_name = tempfile.mkstemp(
+                    prefix=f".{target.name}.", suffix=".rollback", dir=target.parent
+                )
+                try:
+                    with os.fdopen(fd, "wb") as handle:
+                        handle.write(previous)
+                        handle.flush()
+                        os.fsync(handle.fileno())
+                    os.replace(rollback_name, target)
+                finally:
+                    Path(rollback_name).unlink(missing_ok=True)
+        raise
+    finally:
+        for _, temp_path in staged:
+            temp_path.unlink(missing_ok=True)
 
 
 def _validate_history(args: argparse.Namespace) -> int:

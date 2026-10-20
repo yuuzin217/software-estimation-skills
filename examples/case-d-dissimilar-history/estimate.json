@@ -40,6 +40,7 @@
       "similarity_threshold": "0.60",
       "minimum_records_for_historical_primary": 3,
       "minimum_category_jaccard_for_scaling": "0.50",
+      "maximum_size_extrapolation_factor": "2",
       "similarity_weights": {
         "project_type": "0.35",
         "project_scope": "0.20",
@@ -56,6 +57,11 @@
     "usable_for_scaling_count": 0,
     "fictional_records_present": true,
     "can_be_primary": false,
+    "size_extrapolation": {
+      "status": "not_assessed",
+      "reason": "規模按分に使える実績が無いため、外挿範囲を評価できません。",
+      "max_extrapolation_factor": "2"
+    },
     "records": [
       {
         "project_id": "EMB-001",
@@ -71,6 +77,7 @@
           "technology": "0.0000",
           "work_categories": "1.0000"
         },
+        "project_scope_match": true,
         "type_cap_applied": true,
         "above_threshold": false,
         "usable_for_scaling": false,
@@ -131,6 +138,8 @@
       }
     ],
     "cross_check_only": false,
+    "estimable_count": 1,
+    "unestimated_count": 0,
     "optimistic": "2.00",
     "most_likely": "3.00",
     "pessimistic": "5.00",
@@ -175,7 +184,28 @@
       "effort_places": 2,
       "money_places": 2,
       "note": "合計は丸める前の値を加算し、最後に一度だけ丸めます。"
-    }
+    },
+    "estimate_scope": "project"
+  },
+  "coverage": {
+    "status": "complete",
+    "basis": "wbs",
+    "is_total_estimate": true,
+    "wbs_status": "complete",
+    "required_requirement_ids": [
+      "F-001"
+    ],
+    "mapped_requirement_ids": [
+      "F-001"
+    ],
+    "estimated_requirement_ids": [
+      "F-001"
+    ],
+    "uncovered_requirement_ids": [],
+    "unestimated_requirement_ids": [],
+    "unestimated_wbs_ids": [],
+    "unscoped_unestimated_wbs_ids": [],
+    "note": "機能要件・非機能要件が算定可能なWBSに対応し、未算定WBSもありません。"
   },
   "cost": {
     "status": "not_calculated",

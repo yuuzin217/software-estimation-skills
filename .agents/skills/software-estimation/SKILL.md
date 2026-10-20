@@ -21,14 +21,14 @@ metadata:
 ## 手順
 
 1. Markdownまたはテキストの要件を読む。PDFやWordは、いま使っているエージェントの既存機能でテキスト化する。独自の文書パーサーは作らない。
-2. 対象、機能、非機能、対象外、未確定、前提に分ける。見積もれない部分があっても、算定できる範囲は残す。
+2. 対象、機能、非機能、対象外、未確定、前提に分ける。cold-startでは全要件がWBSに対応しているか確認し、未算定作業や対応漏れがあれば部分見積もりとして明示する。
 3. 過去実績が無い、またはCSV/JSONが無い場合は [cold-start-estimation](../cold-start-estimation/SKILL.md) に従いWBSを作る。
 4. 実績がある場合は [historical-estimation](../historical-estimation/SKILL.md) に従い、品質と類似性を依頼JSONへ書く。類似性が低い実績を補正して採用しない。
 5. `assets/request.minimal.json` を土台に依頼JSONを作る。工数は整数か十進文字列にする。`1.5` のようなJSON数値は拒否される。
 6. リポジトリルートで計算する。
 
 ```bash
-python -m estimator calculate --input request.json --output estimate.md --json-output estimate.json
+python -m estimator calculate --input request.json --json-output estimate.json --output estimate.md --csv-output wbs.csv
 ```
 
 7. 終了コードが0のときだけ、出力Markdownの数値を結果にする。終了コードが2のときはメッセージを直して再実行する。手計算で数値を置き換えない。
@@ -46,7 +46,9 @@ python -m estimator calculate --input request.json --output estimate.md --json-o
 
 ## 出力
 
-利用者向けの本文はスクリプトのMarkdownを使う。要約しても、楽観・最頻・悲観・期待・計画・費用・期間の数値はJSONと一致させる。
+JSONを正本とし、MarkdownとCSVは同じ計算結果から作る。利用者向けの本文はスクリプトのMarkdownを使う。要約しても、楽観・最頻・悲観・期待・計画・費用・期間の数値はJSONと一致させる。
+
+`coverage.status` が `partial` のcold-startは部分見積もりである。計画工数を対象全体の値として扱わず、対象全体の費用・期間を出さない。historical方式では案件全体を実績から見積もり、WBSは照合用なので、WBSの網羅性で主見積もりを制限しない。
 
 費用は単価があるときだけ、期間は人数と稼働率があるときだけ出す。期間を確定値と呼ばない。
 

@@ -23,7 +23,7 @@ WBSの作り方はこのファイルと `references/` で完結する。数値�
 1. 機能、非機能、対象外、未確定、前提を分ける。
 2. [references/wbs.md](references/wbs.md) の工程一覧から、本件に必要な作業だけを選ぶ。全工程を必須にしない。不要な工程は対象外へ理由とともに書く。
 3. レビューできる粒度でWBSを作る。1機能をファイル単位まで割らない。目安は5〜30項目。40項目を超えそうなら粒度を戻す。
-4. 各項目を要件IDへ結び付ける。横断作業は `UNSCOPED`。
+4. 各項目を要件IDへ結び付ける。横断作業は `UNSCOPED`。機能・非機能要件の全IDがWBSに登場することを確認する。
 5. [references/three-point.md](references/three-point.md) に従い O、M、P を置く。根拠が弱い項目は幅を広げ、`provisional: true` と `AI_ESTIMATE` にする。精密な一点にはしない。
 6. 非機能、セキュリティ、移行、外部連携、テスト、レビュー、不具合修正、プロジェクト管理を、該当するものだけ独立項目にする。機能実装の中へ隠さない。
 7. [references/uncertainty.md](references/uncertainty.md) の形でリスクを書く。一律の予備率は使わない。
@@ -31,14 +31,14 @@ WBSの作り方はこのファイルと `references/` で完結する。数値�
 9. リポジトリルートで計算する。
 
 ```bash
-python -m estimator calculate --input request.json --output estimate.md --json-output estimate.json
+python -m estimator calculate --input request.json --json-output estimate.json --output estimate.md --csv-output wbs.csv
 ```
 
 10. 終了コード0のMarkdownを結果にする。数値を暗算で修正しない。
 
 ## 算定不能
 
-外部仕様が無い、受入条件が無いなど、幅さえ置けない作業は `estimable: false` と `blocked_reason` を付ける。残りの項目は計算する。重要な前提が欠けていることは、未確定事項として先頭に書く。
+外部仕様が無い、受入条件が無いなど、幅さえ置けない作業は `estimable: false` と `blocked_reason` を付ける。残りの項目は計算しますが、未算定WBSやWBSに対応しない要件があれば網羅性は部分的です。部分工数を全体の確定値として表示せず、対象全体の費用と期間は算出しません。重要な前提が欠けていることは結果に明示します。
 
 ## 禁止
 

@@ -13,6 +13,9 @@ TYPE_MISMATCH_CAP = Decimal("0.40")
 # 類似実績を主方式にできる最少件数。これを下回る場合は cold-start を主方式にする。
 HISTORICAL_PRIMARY_MIN_RECORDS = 3
 
+# 規模按分で実績分布から外挿する倍率の上限。本ツール独自の安全策であり、公的基準ではない。
+MAX_SIZE_EXTRAPOLATION_FACTOR = Decimal("2")
+
 # 工程集合のJaccard係数がこの値未満の実績は、規模按分に使わない。
 CATEGORY_JACCARD_MIN = Decimal("0.50")
 
