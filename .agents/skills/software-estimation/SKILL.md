@@ -1,6 +1,6 @@
 ---
 name: software-estimation
-description: "要件定義、機能一覧、ユーザーストーリー、非機能要件から開発工数・費用・開発期間を見積もる入口。過去実績の有無と類似性を見て、cold-start-estimation か historical-estimation を主方式にする。ソフトウェア見積もり、工数、費用、工期、WBSを求められたときに使う。数値は python -m estimator で計算し、暗算で置き換えない。"
+description: "要件資料フォルダ、要件定義、機能一覧、ユーザーストーリー、非機能要件から開発工数・費用・開発期間を見積もる入口。過去実績の有無と類似性を見て、cold-start-estimation か historical-estimation を主方式にする。資料フォルダを指定した見積もり、ソフトウェア見積もり、工数、費用、工期、WBSを求められたときに使う。数値は python -m estimator で計算し、暗算で置き換えない。"
 license: MIT
 compatibility: "Python 3.11以上の標準ライブラリだけで計算できる。リポジトリルートで python -m estimator を実行する。ネットワークは不要。"
 metadata:
@@ -17,6 +17,17 @@ metadata:
 手順はこのファイルだけでも追える。数値計算はリポジトリ全体の `estimator` が必要であり、このディレクトリだけをコピーしても計算は動かない。
 
 正本は `.agents/skills/`。`.cursor/skills/` や `.codex/skills/` へコピーしない。
+
+## 資料フォルダから見積もる（推奨）
+
+ユーザーが要件定義書・設計書・画面一覧・API仕様などの**フォルダパスを指定した場合**、まず [references/folder-input.md](references/folder-input.md) に従う。エージェントが読み取り可能な範囲でフォルダを再帰的に調査し、要件と出典を整理して `request.json` を作り、既存の計算CLIで `estimate.json`、`estimate.md`、`wbs.csv` を生成する。
+
+例：`software-estimation Skillで /path/to/project-docs を見積もって`。
+
+- **ユーザーが手動でrequest.jsonを作る必要はない**。ただしエージェントがフォルダにアクセスできることが前提。
+- PDF・Word・Excel・図表などは、エージェント環境で対応する読み取り機能がある場合にだけ内容を確認する。未読資料や矛盾を隠さない。
+- 元資料は読み取り専用。生成物は既定でこのリポジトリの `.estimates/<フォルダ名>/` に保存し、Gitに含めない。
+- **計算CLIはフォルダパスを直接受け取らない**。フォルダ調査とJSON作成はエージェント、検証と数値計算はPythonの役割である。
 
 ## 手順
 
