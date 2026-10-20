@@ -56,6 +56,20 @@ def main(argv: list[str] | None = None) -> int:
 def _calculate(args: argparse.Namespace) -> int:
     input_path = Path(args.input)
     data = json.loads(input_path.read_text(encoding="utf-8"))
+    protected_paths = [("依頼JSON", input_path)]
+    history_spec = data.get("history") if isinstance(data, dict) else None
+    history_path_value = history_spec.get("path") if isinstance(history_spec, dict) else None
+    if isinstance(history_path_value, str) and history_path_value:
+        history_path = Path(history_path_value)
+        if not history_path.is_absolute():
+            history_path = input_path.parent / history_path
+        protected_paths.append(("参照実績ファイル", history_path))
+    output_targets = [
+        Path(path)
+        for path in (args.output, args.json_output, args.csv_output)
+        if path
+    ]
+    _validate_output_paths(output_targets, protected_paths)
     result = calculate(data, base_dir=input_path.parent)
     markdown = render_markdown(result)
     outputs: list[tuple[Path, str]] = []
@@ -65,18 +79,44 @@ def _calculate(args: argparse.Namespace) -> int:
         outputs.append((Path(args.json_output), json.dumps(result, ensure_ascii=False, indent=2) + "\n"))
     if args.csv_output:
         outputs.append((Path(args.csv_output), render_csv(result)))
-    _write_output_files(outputs)
+    _write_output_files(outputs, protected_paths=protected_paths)
     if not args.output:
         print(markdown)
     return 0
 
 
-def _write_output_files(outputs: list[tuple[Path, str]]) -> None:
-    """Stage every output first, then atomically replace targets with rollback on failure."""
-    targets = [target for target, _ in outputs]
+def _validate_output_paths(
+    targets: list[Path], protected_paths: list[tuple[str, Path]] | None = None
+) -> None:
     resolved = [path.resolve(strict=False) for path in targets]
     if len(set(resolved)) != len(resolved):
         raise EstimationError(["Markdown、JSON、CSVの出力先は別々のファイルにしてください。"])
+
+    for target in targets:
+        for label, protected in protected_paths or []:
+            if _paths_refer_to_same_file(target, protected):
+                raise EstimationError(
+                    [f"出力先 {target} は {label} ({protected}) と同じファイルを指すため、上書きを拒否しました。"]
+                )
+
+
+def _paths_refer_to_same_file(first: Path, second: Path) -> bool:
+    if first.resolve(strict=False) == second.resolve(strict=False):
+        return True
+    try:
+        return first.exists() and second.exists() and os.path.samefile(first, second)
+    except OSError:
+        return False
+
+
+def _write_output_files(
+    outputs: list[tuple[Path, str]],
+    *,
+    protected_paths: list[tuple[str, Path]] | None = None,
+) -> None:
+    """Stage every output first, then atomically replace targets with rollback on failure."""
+    targets = [target for target, _ in outputs]
+    _validate_output_paths(targets, protected_paths)
 
     originals: dict[Path, bytes | None] = {}
     staged: list[tuple[Path, Path]] = []
@@ -92,6 +132,7 @@ def _write_output_files(outputs: list[tuple[Path, str]]) -> None:
                 handle.write(content)
                 handle.flush()
                 os.fsync(handle.fileno())
+        _validate_output_paths(targets, protected_paths)
         for target, temp_path in staged:
             os.replace(temp_path, target)
             replaced.append(target)

@@ -64,15 +64,47 @@
     "can_be_primary": true,
     "size_extrapolation": {
       "status": "within_range",
-      "reason": "対象規模は本ツールの外挿範囲内です。",
+      "reason": "すべての候補実績と対象の規模比が本ツールの上下2倍以内です。",
       "target_size": "8",
       "size_kind": "feature_count",
       "observed_min": "6",
       "observed_max": "10",
       "allowed_min": "3",
       "allowed_max": "20",
+      "record_min_size": "4",
+      "record_max_size": "16",
       "max_extrapolation_factor": "2",
-      "note": "有効実績の最小・最大規模から上下2倍以内とする本ツール独自の方針です。公的基準ではありません。"
+      "decision_basis": "per_record",
+      "record_comparisons": [
+        {
+          "project_id": "DEMO-001",
+          "record_size": "6",
+          "target_to_record_ratio": "1.333333333333333333333333333",
+          "maximum_size_ratio": "1.333333333333333333333333333",
+          "accepted": true
+        },
+        {
+          "project_id": "DEMO-002",
+          "record_size": "10",
+          "target_to_record_ratio": "0.8",
+          "maximum_size_ratio": "1.25",
+          "accepted": true
+        },
+        {
+          "project_id": "DEMO-003",
+          "record_size": "8",
+          "target_to_record_ratio": "1",
+          "maximum_size_ratio": "1",
+          "accepted": true
+        }
+      ],
+      "accepted_record_ids": [
+        "DEMO-001",
+        "DEMO-002",
+        "DEMO-003"
+      ],
+      "excluded_record_ids": [],
+      "note": "各実績と対象の規模比を個別に比較し、上下2倍以内だけを採用する本ツール独自の方針です。公的基準ではありません。"
     },
     "records": [
       {

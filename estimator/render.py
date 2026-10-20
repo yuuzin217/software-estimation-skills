@@ -237,7 +237,7 @@ def render_markdown(result: dict) -> str:
     lines.append(f"- 類似度の下限: {policy['similarity_threshold']}")
     lines.append(f"- historical を主方式にする最少件数: {policy['minimum_records_for_historical_primary']}")
     lines.append(f"- 規模按分に必要な工程の重なり: {policy['minimum_category_jaccard_for_scaling']}")
-    lines.append(f"- 規模外挿の上限: 有効実績の観測範囲から上下{policy['maximum_size_extrapolation_factor']}倍")
+    lines.append(f"- 規模外挿の上限: 対象と各実績の規模比を個別比較し上下{policy['maximum_size_extrapolation_factor']}倍")
     lines.append(f"- {policy['note']}")
     lines.extend(["", "### 実績データ", ""])
     history = result["history_evaluation"]
@@ -247,12 +247,13 @@ def render_markdown(result: dict) -> str:
     )
     extrapolation = history["size_extrapolation"]
     lines.append(f"規模外挿の評価: {extrapolation['status']}。{extrapolation['reason']}")
-    if extrapolation.get("allowed_min") is not None:
+    if extrapolation.get("record_min_size") is not None:
         lines.append(
-            f"- 対象規模 {extrapolation['target_size']}。有効実績 {extrapolation['observed_min']}〜"
-            f"{extrapolation['observed_max']}、許容範囲 {extrapolation['allowed_min']}〜"
-            f"{extrapolation['allowed_max']}（上下{extrapolation['max_extrapolation_factor']}倍）。"
+            f"- 対象規模 {extrapolation['target_size']}。各実績の許容規模 {extrapolation['record_min_size']}〜"
+            f"{extrapolation['record_max_size']}（対象の上下{extrapolation['max_extrapolation_factor']}倍）。"
         )
+        if extrapolation.get("excluded_record_ids"):
+            lines.append("- 規模差で除外した実績: " + ", ".join(extrapolation["excluded_record_ids"]))
         lines.append(f"- 方針: {extrapolation['note']}")
     historical = result["historical_estimate"]
     lines.append(f"実績見積もり: {historical['status']}。{historical.get('reason', '')}")

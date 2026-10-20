@@ -84,19 +84,72 @@ class HistoryAndBenchmarkTest(unittest.TestCase):
             self.assertFalse(record["project_scope_match"])
             self.assertTrue(any("project_scope" in reason for reason in record["exclusion_reasons"]))
 
-    def test_historical_scale_envelope_accepts_nearby_and_boundary_sizes(self) -> None:
-        for target in ("8", "12", "3", "20"):
-            with self.subTest(target=target):
+    def test_historical_scale_gate_compares_each_record_to_target(self) -> None:
+        cases = [
+            ("8", ("6", "8", "10")),
+            ("12", ("6", "8", "10")),
+            ("6", ("3", "6", "12")),
+        ]
+        for target, sizes in cases:
+            with self.subTest(target=target, sizes=sizes):
                 request = minimal_request()
                 request["comparison_profile"] = comparison_profile()
                 request["target_size"] = {"kind": "feature_count", "value": target}
                 request["history"] = {
                     "allow_fictional": True,
-                    "records": [_similar("P-001", "30", "6"), _similar("P-002", "40", "8"), _similar("P-003", "50", "10")],
+                    "records": [
+                        _similar(f"P-{index:03}", str(30 + index * 10), size)
+                        for index, size in enumerate(sizes, start=1)
+                    ],
                 }
                 result = calculate(request)
                 self.assertEqual(result["method"]["primary"], "historical")
                 self.assertEqual(result["history_evaluation"]["size_extrapolation"]["status"], "within_range")
+                self.assertEqual(result["history_evaluation"]["usable_for_scaling_count"], 3)
+
+    def test_mixed_size_outlier_is_excluded_and_insufficient_records_fall_back(self) -> None:
+        request = minimal_request()
+        request["comparison_profile"] = comparison_profile()
+        request["target_size"] = {"kind": "feature_count", "value": "20000"}
+        request["history"] = {
+            "allow_fictional": True,
+            "records": [
+                _similar("P-002", "20", "2"),
+                _similar("P-009", "90", "9"),
+                _similar("P-10000", "100000", "10000"),
+            ],
+        }
+        result = calculate(request)
+        extrapolation = result["history_evaluation"]["size_extrapolation"]
+        self.assertEqual(result["method"]["primary"], "cold-start")
+        self.assertEqual(extrapolation["status"], "filtered")
+        self.assertEqual(extrapolation["accepted_record_ids"], ["P-10000"])
+        self.assertEqual(extrapolation["excluded_record_ids"], ["P-002", "P-009"])
+        self.assertEqual(result["history_evaluation"]["usable_for_scaling_count"], 1)
+        for record in result["history_evaluation"]["records"][:2]:
+            self.assertFalse(record["usable_for_scaling"])
+            self.assertTrue(any("規模比" in reason for reason in record["exclusion_reasons"]))
+
+    def test_distant_record_is_filtered_when_three_nearby_records_remain(self) -> None:
+        request = minimal_request()
+        request["comparison_profile"] = comparison_profile()
+        request["target_size"] = {"kind": "feature_count", "value": "8000"}
+        request["history"] = {
+            "allow_fictional": True,
+            "records": [
+                _similar("P-002", "20", "2"),
+                _similar("P-8000", "80000", "8000"),
+                _similar("P-9000", "90000", "9000"),
+                _similar("P-10000", "100000", "10000"),
+            ],
+        }
+        result = calculate(request)
+        self.assertEqual(result["method"]["primary"], "historical")
+        self.assertEqual(result["history_evaluation"]["usable_for_scaling_count"], 3)
+        self.assertEqual(
+            result["historical_estimate"]["used_record_ids"], ["P-8000", "P-9000", "P-10000"]
+        )
+        self.assertEqual(result["history_evaluation"]["size_extrapolation"]["excluded_record_ids"], ["P-002"])
 
     def test_extreme_scale_extrapolation_falls_back_to_cold_start(self) -> None:
         for target in ("8000", "1", "2.99", "20.01"):
@@ -113,7 +166,7 @@ class HistoryAndBenchmarkTest(unittest.TestCase):
                 self.assertEqual(result["history_evaluation"]["size_extrapolation"]["status"], "rejected")
                 self.assertEqual(result["history_evaluation"]["usable_for_scaling_count"], 0)
                 self.assertEqual(result["historical_estimate"]["status"], "not_calculated")
-                self.assertTrue(any("許容する2倍範囲" in reason for reason in result["history_evaluation"]["records"][0]["exclusion_reasons"]))
+                self.assertTrue(any("規模比" in reason for reason in result["history_evaluation"]["records"][0]["exclusion_reasons"]))
 
     def test_historical_primary_coverage_is_independent_of_cross_check_wbs(self) -> None:
         request = minimal_request()

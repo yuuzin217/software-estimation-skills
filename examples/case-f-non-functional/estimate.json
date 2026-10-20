@@ -97,7 +97,11 @@
     "size_extrapolation": {
       "status": "not_assessed",
       "reason": "規模按分に使える実績が無いため、外挿範囲を評価できません。",
-      "max_extrapolation_factor": "2"
+      "max_extrapolation_factor": "2",
+      "decision_basis": "per_record",
+      "record_comparisons": [],
+      "accepted_record_ids": [],
+      "excluded_record_ids": []
     },
     "records": []
   },

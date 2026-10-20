@@ -3,6 +3,7 @@
 import csv
 import io
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -126,6 +127,92 @@ class OutputTest(unittest.TestCase):
             )
             self.assertEqual(completed.returncode, 2)
             self.assertEqual(target.read_text(encoding="utf-8"), "keep this")
+
+    def test_output_path_cannot_replace_input_through_symlink_or_relative_alias(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            source = directory / "request.json"
+            original = json.dumps(minimal_request(), ensure_ascii=False)
+            source.write_text(original, encoding="utf-8")
+            try:
+                symlink = directory / "request-alias.json"
+                symlink.symlink_to(source)
+            except (NotImplementedError, OSError):
+                self.skipTest("この環境ではシンボリックリンクを作成できません")
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "estimator",
+                    "calculate",
+                    "--input",
+                    str(source),
+                    "--json-output",
+                    str(symlink),
+                ],
+                cwd=ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(completed.returncode, 2)
+            self.assertIn("依頼JSON", completed.stderr)
+            self.assertEqual(source.read_text(encoding="utf-8"), original)
+            self.assertTrue(symlink.is_symlink())
+
+            relative_source = Path(os.path.relpath(source, ROOT))
+            relative_alias = f"./{relative_source}"
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "estimator",
+                    "calculate",
+                    "--input",
+                    str(relative_source),
+                    "--output",
+                    relative_alias,
+                ],
+                cwd=ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(completed.returncode, 2)
+            self.assertEqual(source.read_text(encoding="utf-8"), original)
+
+    def test_output_path_cannot_replace_referenced_history_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            history_path = directory / "history.json"
+            history_original = json.dumps({"records": []})
+            history_path.write_text(history_original, encoding="utf-8")
+            request = minimal_request()
+            request["history"] = {"path": "history.json"}
+            source = directory / "request.json"
+            source.write_text(json.dumps(request, ensure_ascii=False), encoding="utf-8")
+            input_original = source.read_text(encoding="utf-8")
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "estimator",
+                    "calculate",
+                    "--input",
+                    str(source),
+                    "--json-output",
+                    str(history_path),
+                ],
+                cwd=ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(completed.returncode, 2)
+            self.assertIn("参照実績ファイル", completed.stderr)
+            self.assertEqual(source.read_text(encoding="utf-8"), input_original)
+            self.assertEqual(history_path.read_text(encoding="utf-8"), history_original)
 
     def test_staging_failure_keeps_all_existing_outputs_unchanged(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

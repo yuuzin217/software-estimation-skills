@@ -336,13 +336,17 @@ def _evaluate_record(
 
 
 def _apply_size_extrapolation(records: list[dict], target_size: dict | None) -> dict:
-    """有効実績の観測範囲から2倍を超える外挿を、按分候補から外す。"""
+    """対象との規模差が2倍を超える実績を、個別に按分候補から外す。"""
     candidates = [item for item in records if item["usable_for_scaling"] and item["size"]]
     if target_size is None or not candidates:
         return {
             "status": "not_assessed",
             "reason": "規模按分に使える実績が無いため、外挿範囲を評価できません。",
             "max_extrapolation_factor": exact_str(MAX_SIZE_EXTRAPOLATION_FACTOR),
+            "decision_basis": "per_record",
+            "record_comparisons": [],
+            "accepted_record_ids": [],
+            "excluded_record_ids": [],
         }
 
     values = [Decimal(item["size"]["value"]) for item in candidates]
@@ -351,29 +355,69 @@ def _apply_size_extrapolation(records: list[dict], target_size: dict | None) -> 
     target = Decimal(target_size["value"])
     allowed_min = observed_min / MAX_SIZE_EXTRAPOLATION_FACTOR
     allowed_max = observed_max * MAX_SIZE_EXTRAPOLATION_FACTOR
+    record_min_size = target / MAX_SIZE_EXTRAPOLATION_FACTOR
+    record_max_size = target * MAX_SIZE_EXTRAPOLATION_FACTOR
+    accepted_record_ids = []
+    excluded_record_ids = []
+    comparisons = []
+    for item in candidates:
+        record_size = Decimal(item["size"]["value"])
+        ratio = max(target / record_size, record_size / target)
+        accepted = ratio <= MAX_SIZE_EXTRAPOLATION_FACTOR
+        decision = {
+            "project_id": item["project_id"],
+            "record_size": exact_str(record_size),
+            "target_to_record_ratio": exact_str(target / record_size),
+            "maximum_size_ratio": exact_str(ratio),
+            "accepted": accepted,
+        }
+        comparisons.append(decision)
+        item["size_extrapolation_factor"] = exact_str(ratio)
+        item["size_extrapolation_allowed"] = accepted
+        if accepted:
+            accepted_record_ids.append(item["project_id"])
+            continue
+        excluded_record_ids.append(item["project_id"])
+        reason = (
+            f"対象との規模比（実績 {exact_str(record_size)}、対象 {exact_str(target)}）は最大 "
+            f"{exact_str(ratio)} 倍で、本ツールの上限{exact_str(MAX_SIZE_EXTRAPOLATION_FACTOR)}倍を超えるため、"
+            "規模按分には使いません。"
+        )
+        item["usable_for_scaling"] = False
+        item["unit_rate"] = None
+        item["exclusion_reasons"].append(reason)
+
     shared = {
         "target_size": exact_str(target),
         "size_kind": target_size["kind"],
         "observed_min": exact_str(observed_min),
         "observed_max": exact_str(observed_max),
+        # Kept as collection-level context for output compatibility. Decisions use
+        # each record's ratio to the target, recorded below.
         "allowed_min": exact_str(allowed_min),
         "allowed_max": exact_str(allowed_max),
+        "record_min_size": exact_str(record_min_size),
+        "record_max_size": exact_str(record_max_size),
         "max_extrapolation_factor": exact_str(MAX_SIZE_EXTRAPOLATION_FACTOR),
-        "note": "有効実績の最小・最大規模から上下2倍以内とする本ツール独自の方針です。公的基準ではありません。",
+        "decision_basis": "per_record",
+        "record_comparisons": comparisons,
+        "accepted_record_ids": accepted_record_ids,
+        "excluded_record_ids": excluded_record_ids,
+        "note": "各実績と対象の規模比を個別に比較し、上下2倍以内だけを採用する本ツール独自の方針です。公的基準ではありません。",
     }
-    if allowed_min <= target <= allowed_max:
-        return {"status": "within_range", "reason": "対象規模は本ツールの外挿範囲内です。", **shared}
-
-    reason = (
-        f"対象規模 {exact_str(target)} は、有効実績の観測範囲 {exact_str(observed_min)}〜"
-        f"{exact_str(observed_max)} から許容する2倍範囲 {exact_str(allowed_min)}〜"
-        f"{exact_str(allowed_max)} を外れるため、規模按分には使いません。"
-    )
-    for item in candidates:
-        item["usable_for_scaling"] = False
-        item["unit_rate"] = None
-        item["exclusion_reasons"].append(reason)
-    return {"status": "rejected", "reason": reason, **shared}
+    if not excluded_record_ids:
+        status = "within_range"
+        reason = "すべての候補実績と対象の規模比が本ツールの上下2倍以内です。"
+    elif accepted_record_ids:
+        status = "filtered"
+        reason = (
+            f"対象との規模比が本ツールの上下2倍を超えた実績 {len(excluded_record_ids)} 件を除外しました。"
+            f"残った按分候補は {len(accepted_record_ids)} 件です。"
+        )
+    else:
+        status = "rejected"
+        reason = "すべての候補実績が対象との規模比の上限を超えるため、規模按分には使いません。"
+    return {"status": status, "reason": reason, **shared}
 
 
 def build_historical_estimate(evaluation: dict, target_size: dict | None, effort_unit: str) -> dict:

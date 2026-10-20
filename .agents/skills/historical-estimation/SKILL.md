@@ -39,7 +39,7 @@ python -m estimator validate-history --input history.json
 4. 対象案件の `comparison_profile` と `target_size` を書く。`project_scope`（新規、改修など）の一致を必須とする。規模の種類が実績と違う場合は按分しない。
 5. [references/similarity.md](references/similarity.md) の採用条件を満たすか確認する。満たさない実績を係数で寄せない。
 6. 採用できる類似実績が3件未満、または規模按分できない場合は、WBSを [cold-start-estimation](../cold-start-estimation/SKILL.md) で作り、実績は補助にする。
-   対象規模が有効実績の最小・最大規模から上下2倍を超える場合は、外挿を避けてcold-startへ切り替える。この倍率は本ツール独自の方針で、公式基準ではない。
+   対象と各有効実績の規模比を個別に確認し、上下2倍を超える実績は除外する。除外後に3件未満となる場合はcold-startへ切り替える。この倍率は本ツール独自の方針で、公式基準ではない。
 7. 3件以上が規模按分できる場合だけ historical を主方式にできる。WBSを併記してもよいが、合計へは足さない。
 8. リポジトリルートで `python -m estimator calculate --input request.json --json-output estimate.json --output estimate.md --csv-output wbs.csv` を実行し、終了コード0の出力を結果にする。
 
