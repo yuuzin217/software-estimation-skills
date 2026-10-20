@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "meta": {
+    "system_name": "既存APIへの項目追加",
+    "purpose": "単価と体制が不明なときの出力確認",
+    "estimation_date": "2026-10-20",
+    "input_summary": "既存APIへ任意項目を1つ追加する。単価と人数は不明",
+    "effort_unit": "person_day"
+  },
+  "scope": {
+    "functions": [
+      {"id": "F-001", "name": "任意項目", "description": "既存の登録APIと画面へ任意項目を1つ追加する"}
+    ],
+    "non_functional": [],
+    "out_of_scope": ["料金改定", "インフラ変更"],
+    "unknowns": ["人日単価", "担当人数"]
+  },
+  "assumptions": [
+    {"id": "A-001", "statement": "既存の認証とテーブルを流用する", "impact": "新規基盤を見積もらない"}
+  ],
+  "risks": [],
+  "wbs": [
+    {
+      "id": "WBS-001",
+      "requirement_ids": ["F-001"],
+      "name": "項目追加",
+      "description": "API、画面、テストへ項目を追加する",
+      "phase": "implementation",
+      "estimable": true,
+      "optimistic": "1",
+      "most_likely": "2",
+      "pessimistic": "4",
+      "uncertainty": "medium",
+      "provisional": true,
+      "basis": {"kind": "AI_ESTIMATE", "explanation": "既存項目の追加パターンに似せた暫定幅である"}
+    }
+  ]
+}

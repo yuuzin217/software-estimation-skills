@@ -1,0 +1,2 @@
+project_id,project_type,technology_stack,project_scope,work_category,estimated_effort,actual_effort,effort_unit,hours_per_person_day,team_size,duration,duration_unit,completion_date,size_kind,size_value,fictional,notes
+SAMPLE-001,new_web_app,python|fastapi,new,implementation|test,20,24,person_day,,2,15,calendar_day,2024-06-30,feature_count,5,true,架空の書式見本。見積もりに使わない

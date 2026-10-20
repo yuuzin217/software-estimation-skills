@@ -1,0 +1,20 @@
+name: tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 計算テストとSkill構成の検証
+        run: python -m unittest discover -s tests -v
+      - name: 公式skills-refによる検証
+        run: |
+          python -m pip install skills-ref==0.1.1
+          python -m estimator validate-skills

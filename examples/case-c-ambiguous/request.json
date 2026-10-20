@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "meta": {
+    "system_name": "未確定の顧客管理",
+    "purpose": "要件が曖昧な段階の幅見積もり",
+    "estimation_date": "2026-10-20",
+    "input_summary": "顧客を管理したい以外は未確定",
+    "effort_unit": "person_day"
+  },
+  "scope": {
+    "functions": [
+      {"id": "F-001", "name": "顧客管理", "description": "顧客情報を扱いたいが、項目と画面は未定"}
+    ],
+    "non_functional": [],
+    "out_of_scope": [],
+    "unknowns": [
+      "画面数と項目数が未定",
+      "権限区分が未定",
+      "既存データの有無が未定"
+    ]
+  },
+  "assumptions": [
+    {"id": "A-001", "statement": "Web画面での登録と検索に限ると仮定した", "impact": "この仮定が崩れると再見積もり"}
+  ],
+  "risks": [
+    {
+      "id": "R-001",
+      "description": "対象業務が登録以外へ広がる",
+      "trigger": "請求や権限の詳細が後から追加される",
+      "impact_area": "全体",
+      "estimation_impact": "探索実装の悲観値を広く取った",
+      "response": "業務範囲の確定後に分解し直す",
+      "already_in_three_point": true
+    }
+  ],
+  "wbs": [
+    {
+      "id": "WBS-001",
+      "requirement_ids": ["F-001"],
+      "name": "範囲の探索実装",
+      "description": "未確定の顧客管理を、登録と検索に限って試す",
+      "phase": "implementation",
+      "estimable": true,
+      "optimistic": "2",
+      "most_likely": "5",
+      "pessimistic": "20",
+      "uncertainty": "high",
+      "provisional": true,
+      "basis": {"kind": "AI_ESTIMATE", "explanation": "画面数未定のため幅を広げた暫定値であり、標準工数ではない"}
+    },
+    {
+      "id": "WBS-002",
+      "requirement_ids": ["F-001"],
+      "name": "レコメンド",
+      "description": "顧客への推薦機能",
+      "phase": "other",
+      "estimable": false,
+      "blocked_reason": "推薦の目的と入出力が未定義"
+    }
+  ]
+}

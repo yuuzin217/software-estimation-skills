@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "meta": {
+    "system_name": "架空の類似Webアプリ",
+    "purpose": "類似実績がある場合のデモ",
+    "estimation_date": "2026-10-20",
+    "input_summary": "機能数8の新規Web。類似する架空実績が3件ある",
+    "effort_unit": "person_day"
+  },
+  "scope": {
+    "functions": [
+      {"id": "F-001", "name": "対象機能群", "description": "機能数8として数えた新規Webの機能"}
+    ],
+    "non_functional": [],
+    "out_of_scope": ["インフラ新規構築"],
+    "unknowns": []
+  },
+  "assumptions": [
+    {"id": "A-001", "statement": "機能数の数え方は過去3件と同じである", "impact": "規模按分の前提"},
+    {"id": "A-002", "statement": "実績は架空のデモデータである", "impact": "本番の根拠にはしない"}
+  ],
+  "risks": [],
+  "comparison_profile": {
+    "project_type": "new_web_app",
+    "project_scope": "new",
+    "technology_stack": ["python", "fastapi"],
+    "work_categories": ["implementation", "test"]
+  },
+  "target_size": {"kind": "feature_count", "value": "8"},
+  "history": {"allow_fictional": true, "path": "history.json"},
+  "wbs": [
+    {
+      "id": "WBS-001",
+      "requirement_ids": ["F-001"],
+      "name": "照合用の概算",
+      "description": "実績と並べるための粗いWBS",
+      "phase": "implementation",
+      "estimable": true,
+      "optimistic": "10",
+      "most_likely": "12",
+      "pessimistic": "16",
+      "uncertainty": "high",
+      "provisional": true,
+      "basis": {"kind": "AI_ESTIMATE", "explanation": "照合用の暫定値であり、実績見積もりへ加算しない"}
+    }
+  ]
+}

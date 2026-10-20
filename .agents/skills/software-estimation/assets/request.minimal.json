@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "meta": {
+    "system_name": "書式見本",
+    "purpose": "依頼JSONの最小形を確認する",
+    "estimation_date": "2026-10-20",
+    "input_summary": "計算が通る書式見本であり、実案件の見積もりではない",
+    "effort_unit": "person_day"
+  },
+  "scope": {
+    "functions": [
+      {"id": "F-001", "name": "機能", "description": "書式確認用の機能"}
+    ],
+    "non_functional": [],
+    "out_of_scope": [],
+    "unknowns": []
+  },
+  "assumptions": [
+    {"id": "A-001", "statement": "このファイルは書式見本である", "impact": "実案件の根拠にはしない"}
+  ],
+  "risks": [],
+  "wbs": [
+    {
+      "id": "WBS-001",
+      "requirement_ids": ["F-001"],
+      "name": "実装",
+      "description": "書式確認用の作業",
+      "phase": "implementation",
+      "estimable": true,
+      "optimistic": "1",
+      "most_likely": "2",
+      "pessimistic": "3",
+      "uncertainty": "medium",
+      "provisional": true,
+      "basis": {
+        "kind": "AI_ESTIMATE",
+        "explanation": "書式見本の暫定値であり、標準生産性ではない"
+      }
+    }
+  ]
+}

@@ -1,0 +1,240 @@
+{
+  "schema_version": "1.0",
+  "calculator_version": "0.1.0",
+  "meta": {
+    "system_name": "未確定の顧客管理",
+    "purpose": "要件が曖昧な段階の幅見積もり",
+    "estimation_date": "2026-10-20",
+    "input_summary": "顧客を管理したい以外は未確定",
+    "effort_unit": "person_day",
+    "hours_per_person_day": null
+  },
+  "scope": {
+    "functions": [
+      {
+        "id": "F-001",
+        "name": "顧客管理",
+        "description": "顧客情報を扱いたいが、項目と画面は未定"
+      }
+    ],
+    "non_functional": [],
+    "out_of_scope": [],
+    "unknowns": [
+      "画面数と項目数が未定",
+      "権限区分が未定",
+      "既存データの有無が未定"
+    ]
+  },
+  "assumptions": [
+    {
+      "id": "A-001",
+      "statement": "Web画面での登録と検索に限ると仮定した",
+      "impact": "この仮定が崩れると再見積もり"
+    }
+  ],
+  "risks": [
+    {
+      "id": "R-001",
+      "description": "対象業務が登録以外へ広がる",
+      "trigger": "請求や権限の詳細が後から追加される",
+      "impact_area": "全体",
+      "estimation_impact": "探索実装の悲観値を広く取った",
+      "response": "業務範囲の確定後に分解し直す",
+      "already_in_three_point": true
+    }
+  ],
+  "method": {
+    "primary": "cold-start",
+    "auxiliary": "none",
+    "reason": "採用できる類似実績が無いため、cold-start を主方式にしました。",
+    "override": false,
+    "policy": {
+      "similarity_threshold": "0.60",
+      "minimum_records_for_historical_primary": 3,
+      "minimum_category_jaccard_for_scaling": "0.50",
+      "maximum_size_extrapolation_factor": "2",
+      "similarity_weights": {
+        "project_type": "0.35",
+        "project_scope": "0.20",
+        "technology": "0.25",
+        "work_categories": "0.20"
+      },
+      "note": "これらは本ツールの方針であり、IPA等の公的基準ではない。"
+    }
+  },
+  "history_evaluation": {
+    "loaded_count": 0,
+    "valid_count": 0,
+    "similar_count": 0,
+    "usable_for_scaling_count": 0,
+    "fictional_records_present": false,
+    "can_be_primary": false,
+    "size_extrapolation": {
+      "status": "not_assessed",
+      "reason": "規模按分に使える実績が無いため、外挿範囲を評価できません。",
+      "max_extrapolation_factor": "2",
+      "decision_basis": "per_record",
+      "record_comparisons": [],
+      "accepted_record_ids": [],
+      "excluded_record_ids": []
+    },
+    "records": []
+  },
+  "historical_estimate": {
+    "status": "not_calculated",
+    "reason": "類似し、規模指標と工程が対応する実績が不足しています。",
+    "used_record_ids": [],
+    "effort_unit": "person_day"
+  },
+  "benchmark": {
+    "status": "not_requested",
+    "reason": "外部ベンチマーク照合は依頼されていません。",
+    "applied_to_plan": false
+  },
+  "wbs": {
+    "status": "calculated",
+    "reason": "",
+    "effort_unit": "person_day",
+    "lines": [
+      {
+        "id": "WBS-001",
+        "requirement_ids": [
+          "F-001"
+        ],
+        "name": "範囲の探索実装",
+        "description": "未確定の顧客管理を、登録と検索に限って試す",
+        "phase": "implementation",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "high",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "画面数未定のため幅を広げた暫定値であり、標準工数ではない",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "2.00",
+        "most_likely": "5.00",
+        "pessimistic": "20.00",
+        "expected": "7.00",
+        "optimistic_exact": "2",
+        "most_likely_exact": "5",
+        "pessimistic_exact": "20",
+        "expected_exact": "7"
+      },
+      {
+        "id": "WBS-002",
+        "requirement_ids": [
+          "F-001"
+        ],
+        "name": "レコメンド",
+        "description": "顧客への推薦機能",
+        "phase": "other",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": false,
+        "blocked_reason": "推薦の目的と入出力が未定義",
+        "uncertainty": null,
+        "provisional": null,
+        "basis": null,
+        "effort_unit": "person_day"
+      }
+    ],
+    "cross_check_only": false,
+    "estimable_count": 1,
+    "unestimated_count": 1,
+    "optimistic": "2.00",
+    "most_likely": "5.00",
+    "pessimistic": "20.00",
+    "expected": "7.00",
+    "optimistic_exact": "2",
+    "most_likely_exact": "5",
+    "pessimistic_exact": "20",
+    "expected_exact": "7",
+    "primary_basis": "AI_ESTIMATE",
+    "provenance_totals_exact": {
+      "AI_ESTIMATE": "7"
+    }
+  },
+  "contingency": {
+    "effort": "0.00",
+    "effort_exact": "0",
+    "effort_unit": "person_day",
+    "reason": "",
+    "covered_risk_ids": []
+  },
+  "summary": {
+    "status": "calculated",
+    "reason": "主方式はWBSの三点見積もりです。補助の実績見積もりは加算していません。",
+    "effort_unit": "person_day",
+    "optimistic": "2.00",
+    "most_likely": "5.00",
+    "pessimistic": "20.00",
+    "expected": "7.00",
+    "contingency": "0.00",
+    "planned": "7.00",
+    "optimistic_exact": "2",
+    "most_likely_exact": "5",
+    "pessimistic_exact": "20",
+    "expected_exact": "7",
+    "contingency_exact": "0",
+    "planned_exact": "7",
+    "planned_differs_from_expected": false,
+    "planned_difference_reason": "",
+    "primary_basis": "AI_ESTIMATE",
+    "rounding": {
+      "mode": "ROUND_HALF_UP",
+      "effort_places": 2,
+      "money_places": 2,
+      "note": "合計は丸める前の値を加算し、最後に一度だけ丸めます。"
+    },
+    "estimate_scope": "partial"
+  },
+  "coverage": {
+    "status": "partial",
+    "basis": "wbs",
+    "is_total_estimate": false,
+    "wbs_status": "partial",
+    "required_requirement_ids": [
+      "F-001"
+    ],
+    "mapped_requirement_ids": [
+      "F-001"
+    ],
+    "estimated_requirement_ids": [
+      "F-001"
+    ],
+    "uncovered_requirement_ids": [],
+    "unestimated_requirement_ids": [],
+    "unestimated_wbs_ids": [
+      "WBS-002"
+    ],
+    "unscoped_unestimated_wbs_ids": [],
+    "note": "WBSの網羅性が不完全です。計画工数は算定済み項目だけの部分見積もりです。"
+  },
+  "cost": {
+    "status": "not_calculated",
+    "reason": "WBSの網羅性が不完全なため、対象全体の費用・期間は算出しません。"
+  },
+  "schedule": {
+    "status": "not_calculated",
+    "reason": "WBSの網羅性が不完全なため、対象全体の費用・期間は算出しません。",
+    "limitations": []
+  },
+  "warnings": [
+    "主方式の工数にはAIによる暫定推定が含まれます。精度が高い見積もりではありません。",
+    "網羅性が部分的です。工数は全体の確定値ではありません。費用・期間も算出していません。（未算定WBS: WBS-002）"
+  ],
+  "unestimated_items": [
+    {
+      "id": "WBS-002",
+      "name": "レコメンド",
+      "reason": "推薦の目的と入出力が未定義"
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0",
+  "meta": {
+    "system_name": "架空の社内申請システム",
+    "purpose": "非機能要件を独立して見積もる",
+    "estimation_date": "2026-10-20",
+    "input_summary": "申請1種。監査、脆弱性診断、応答時間の目標がある",
+    "effort_unit": "person_day"
+  },
+  "scope": {
+    "functions": [
+      {"id": "F-001", "name": "申請", "description": "1種類の申請を作成し承認する"}
+    ],
+    "non_functional": [
+      {"id": "NF-001", "name": "監査ログ", "description": "申請の操作履歴を検索できる"},
+      {"id": "NF-002", "name": "脆弱性診断", "description": "リリース前に診断を受ける"},
+      {"id": "NF-003", "name": "応答時間", "description": "通常操作の応答目標は3秒以内"}
+    ],
+    "out_of_scope": ["他システムの申請様式の移行"],
+    "unknowns": ["診断で指摘された場合の修正上限"]
+  },
+  "assumptions": [
+    {"id": "A-001", "statement": "申請様式は1種類である", "impact": "画面とAPIを一式とした"}
+  ],
+  "risks": [
+    {
+      "id": "R-001",
+      "description": "応答目標を満たせない",
+      "trigger": "一覧の件数が見込みより多い",
+      "impact_area": "性能試験",
+      "estimation_impact": "性能試験の悲観値に含めた",
+      "response": "索引とページングを試験項目に含める",
+      "already_in_three_point": true
+    },
+    {
+      "id": "R-002",
+      "description": "診断指摘の修正範囲が読めない",
+      "trigger": "外部診断の指摘が実装の前提を超える",
+      "impact_area": "セキュリティ",
+      "estimation_impact": "三点には含めず、独立した予備にした",
+      "response": "指摘の重大度で対応範囲を再合意する",
+      "already_in_three_point": false
+    }
+  ],
+  "wbs": [
+    {
+      "id": "WBS-001",
+      "requirement_ids": ["F-001"],
+      "name": "申請機能",
+      "description": "申請の作成と承認を実装する",
+      "phase": "implementation",
+      "estimable": true,
+      "optimistic": "3",
+      "most_likely": "5",
+      "pessimistic": "8",
+      "uncertainty": "medium",
+      "provisional": true,
+      "basis": {"kind": "AI_ESTIMATE", "explanation": "申請1種類の実装としての暫定幅である"}
+    },
+    {
+      "id": "WBS-002",
+      "requirement_ids": ["NF-001", "NF-002"],
+      "name": "監査と診断対応の実装",
+      "description": "操作履歴の記録と診断前の基本対策を実装する",
+      "phase": "security",
+      "estimable": true,
+      "optimistic": "2",
+      "most_likely": "3",
+      "pessimistic": "6",
+      "uncertainty": "high",
+      "provisional": true,
+      "basis": {"kind": "AI_ESTIMATE", "explanation": "監査ログと基本対策に限った暫定幅であり、指摘修正の予備とは別である"}
+    },
+    {
+      "id": "WBS-003",
+      "requirement_ids": ["NF-003"],
+      "name": "性能試験",
+      "description": "通常操作の応答を確認する",
+      "phase": "system_test",
+      "estimable": true,
+      "optimistic": "2",
+      "most_likely": "4",
+      "pessimistic": "8",
+      "uncertainty": "high",
+      "provisional": true,
+      "basis": {"kind": "AI_ESTIMATE", "explanation": "応答目標未達時の調整を悲観値に含めた暫定幅である"}
+    }
+  ],
+  "contingency": {
+    "effort": "3",
+    "effort_unit": "person_day",
+    "reason": "外部診断の指摘対応は範囲が未確定なため、三点の外に予備を置いた",
+    "independent_of_three_point": true,
+    "covered_risk_ids": ["R-002"]
+  }
+}

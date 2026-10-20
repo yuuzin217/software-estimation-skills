@@ -1,0 +1,20 @@
+{
+  "fictional": true,
+  "note": "類似性が低いことの確認用。架空の組込み開発。",
+  "records": [
+    {
+      "project_id": "EMB-001",
+      "project_type": "embedded",
+      "project_scope": "new",
+      "technology_stack": ["c"],
+      "work_categories": ["implementation", "test"],
+      "estimated_effort": "80",
+      "actual_effort": "100",
+      "effort_unit": "person_day",
+      "completion_date": "2023-12-15",
+      "size": {"kind": "feature_count", "value": "8"},
+      "fictional": true,
+      "notes": "架空の組込み開発"
+    }
+  ]
+}

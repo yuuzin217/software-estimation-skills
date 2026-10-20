@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0",
+  "meta": {
+    "system_name": "既存の在庫管理",
+    "purpose": "改修案件の見積もり",
+    "estimation_date": "2026-10-20",
+    "input_summary": "既存在庫検索へ条件を1つ追加する",
+    "effort_unit": "person_day"
+  },
+  "scope": {
+    "functions": [
+      {"id": "F-001", "name": "検索条件の追加", "description": "既存の在庫検索へ保管場所の条件を追加する"}
+    ],
+    "non_functional": [
+      {"id": "NF-001", "name": "既存操作の維持", "description": "追加以外の検索結果を変えない"}
+    ],
+    "out_of_scope": ["在庫システムの全面再設計", "インフラの作り直し", "マスタ移行"],
+    "unknowns": ["検索SQLの現行の複雑さ"]
+  },
+  "assumptions": [
+    {"id": "A-001", "statement": "既存の認証、画面枠、テーブルを流用する", "impact": "新規基盤の項目を作らない"}
+  ],
+  "risks": [
+    {
+      "id": "R-001",
+      "description": "既存検索の副作用",
+      "trigger": "共通SQLを変更する必要がある",
+      "impact_area": "回帰テスト",
+      "estimation_impact": "回帰テストの悲観値に含めた",
+      "response": "変更前後の結果を比較する",
+      "already_in_three_point": true
+    }
+  ],
+  "wbs": [
+    {
+      "id": "WBS-001",
+      "requirement_ids": ["F-001"],
+      "name": "影響調査",
+      "description": "検索SQLと画面の変更箇所を特定する",
+      "phase": "impact_analysis",
+      "estimable": true,
+      "optimistic": "0.5",
+      "most_likely": "1",
+      "pessimistic": "3",
+      "uncertainty": "high",
+      "provisional": true,
+      "basis": {"kind": "AI_ESTIMATE", "explanation": "現行SQLの複雑さが未知なための暫定幅である"}
+    },
+    {
+      "id": "WBS-002",
+      "requirement_ids": ["F-001"],
+      "name": "条件追加",
+      "description": "検索条件とAPIを追加する",
+      "phase": "api_implementation",
+      "estimable": true,
+      "optimistic": "1",
+      "most_likely": "2",
+      "pessimistic": "4",
+      "uncertainty": "medium",
+      "provisional": true,
+      "basis": {"kind": "AI_ESTIMATE", "explanation": "条件1つの追加としての暫定幅である"}
+    },
+    {
+      "id": "WBS-003",
+      "requirement_ids": ["F-001", "NF-001"],
+      "name": "回帰テスト",
+      "description": "既存の検索結果が変わらないことを確認する",
+      "phase": "regression_test",
+      "estimable": true,
+      "optimistic": "1",
+      "most_likely": "2",
+      "pessimistic": "4",
+      "uncertainty": "medium",
+      "provisional": true,
+      "basis": {"kind": "AI_ESTIMATE", "explanation": "既存検索の代表ケースを再確認する暫定幅である"}
+    }
+  ],
+  "benchmark": {
+    "catalog_id": "ipa-2022-sloc-productivity-enhancement-under-20ksloc",
+    "development_type": "enhancement",
+    "size_unit": "sloc",
+    "target_size": null,
+    "confirmed_phases": ["impact_analysis"],
+    "acknowledge_population_limits": false,
+    "population_note": "改修だが実効SLOCが無く、開発5工程とも一致しない。"
+  }
+}
