@@ -13,6 +13,8 @@
 
 計算結果JSONを正本とし、MarkdownとWBS CSVは同じ結果オブジェクトから生成する。CSV出力はJSONの表示用工数と一致させ、Excelの数式解釈を防ぐ。
 
+資料フォルダを指定された場合は `.agents/skills/software-estimation/references/folder-input.md` の手順で、エージェントが資料を読み取って `request.json` を生成する。資料は読み取り専用とし、未読ファイル・出典・矛盾を記録する。Python CLI にフォルダを直接渡せると誤認させない。既定の生成先 `.estimates/` はGit管理対象外とする。
+
 同じ `SKILL.md` を別ディレクトリへコピーしないでください。
 
 ## Skillの変更
