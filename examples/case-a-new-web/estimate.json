@@ -1,0 +1,617 @@
+{
+  "schema_version": "1.0",
+  "calculator_version": "0.1.0",
+  "meta": {
+    "system_name": "架空の社内タスク管理Web",
+    "purpose": "予算取り前の概算",
+    "estimation_date": "2026-10-20",
+    "input_summary": "新規の小規模Web。実績データは無い",
+    "effort_unit": "person_day",
+    "hours_per_person_day": null
+  },
+  "scope": {
+    "functions": [
+      {
+        "id": "F-001",
+        "name": "ログイン",
+        "description": "メールとパスワードでログインする"
+      },
+      {
+        "id": "F-002",
+        "name": "タスク操作",
+        "description": "タスクを登録、更新、完了する"
+      },
+      {
+        "id": "F-003",
+        "name": "一覧絞り込み",
+        "description": "担当者と期限でタスクを絞り込む"
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "NF-001",
+        "name": "利用規模",
+        "description": "同時利用はおおむね20名。社内ネットワークからの利用"
+      },
+      {
+        "id": "NF-002",
+        "name": "通信",
+        "description": "HTTPSで提供する"
+      }
+    ],
+    "out_of_scope": [
+      "モバイルアプリ",
+      "データ移行",
+      "インフラの新規構築",
+      "CI/CDの新設",
+      "発注者による受入テスト"
+    ],
+    "unknowns": [
+      "既存の社員マスタを使うかは未確認"
+    ]
+  },
+  "assumptions": [
+    {
+      "id": "A-001",
+      "statement": "画面はログイン、一覧、編集の3画面程度である",
+      "impact": "UI工数の最頻値"
+    },
+    {
+      "id": "A-002",
+      "statement": "既存の社内実行環境を使い、インフラ構築は対象外である",
+      "impact": "インフラ項目を作らない"
+    }
+  ],
+  "risks": [
+    {
+      "id": "R-001",
+      "description": "社員マスタ連携が必要になる",
+      "trigger": "独自の利用者登録が許されない",
+      "impact_area": "認証",
+      "estimation_impact": "認証作業の悲観値に含めた",
+      "response": "確定後に認証項目だけ再見積もりする",
+      "already_in_three_point": true
+    }
+  ],
+  "method": {
+    "primary": "cold-start",
+    "auxiliary": "none",
+    "reason": "採用できる類似実績が無いため、cold-start を主方式にしました。",
+    "override": false,
+    "policy": {
+      "similarity_threshold": "0.60",
+      "minimum_records_for_historical_primary": 3,
+      "minimum_category_jaccard_for_scaling": "0.50",
+      "similarity_weights": {
+        "project_type": "0.35",
+        "project_scope": "0.20",
+        "technology": "0.25",
+        "work_categories": "0.20"
+      },
+      "note": "これらは本ツールの方針であり、IPA等の公的基準ではない。"
+    }
+  },
+  "history_evaluation": {
+    "loaded_count": 0,
+    "valid_count": 0,
+    "similar_count": 0,
+    "usable_for_scaling_count": 0,
+    "fictional_records_present": false,
+    "can_be_primary": false,
+    "records": []
+  },
+  "historical_estimate": {
+    "status": "not_calculated",
+    "reason": "類似し、規模指標と工程が対応する実績が不足しています。",
+    "used_record_ids": [],
+    "effort_unit": "person_day"
+  },
+  "benchmark": {
+    "status": "not_applied",
+    "catalog_id": "ipa-2022-sloc-productivity-new-under-40ksloc",
+    "reason": "適合条件を満たさないため、工数へ換算しません。",
+    "rejection_reasons": [
+      "confirmed_phases が資料の開発5工程と一致しません。工程範囲が違う数値を係数で補正することはしません。",
+      "acknowledge_population_limits が true ではありません。母集団の限界を確認してください。",
+      "target_size が無いため、規模から工数へ換算しません。"
+    ],
+    "source": {
+      "title": "ソフトウェア開発分析データ集2022",
+      "publisher": "独立行政法人情報処理推進機構（IPA）",
+      "published": "2022-09-26",
+      "table": "表A1-2-1 40KSLOC未満",
+      "url": "https://www.ipa.go.jp/digital/software-survey/metrics/hjuojm000000c6it-att/000102171.pdf",
+      "landing_url": "https://www.ipa.go.jp/digital/software-survey/metrics/metrics2022.html",
+      "period": "2016年度〜2021年度（同書で特に断りのない集計期間）",
+      "population": "表A1-2-1のうち実効SLOCが40KSLOC未満の新規開発",
+      "n": 140
+    },
+    "limitations": [
+      "40KSLOC未満の規模帯だけに対応する。境界値40,000SLOCは含まない",
+      "その他の制約は新規開発・全体と同じ"
+    ],
+    "applied_to_plan": false
+  },
+  "wbs": {
+    "status": "calculated",
+    "reason": "",
+    "effort_unit": "person_day",
+    "lines": [
+      {
+        "id": "WBS-001",
+        "requirement_ids": [
+          "F-001",
+          "F-002",
+          "F-003"
+        ],
+        "name": "要件整理",
+        "description": "画面と操作の受入条件を確認する",
+        "phase": "requirements",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "medium",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "画面3つの確認作業としての暫定幅であり、標準生産性ではない",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "1.00",
+        "most_likely": "2.00",
+        "pessimistic": "4.00",
+        "expected": "2.17",
+        "optimistic_exact": "1",
+        "most_likely_exact": "2",
+        "pessimistic_exact": "4",
+        "expected_exact": "2.166666666666666666666666667"
+      },
+      {
+        "id": "WBS-002",
+        "requirement_ids": [
+          "F-001",
+          "F-002",
+          "F-003"
+        ],
+        "name": "基本設計",
+        "description": "画面遷移とデータの骨格を決める",
+        "phase": "basic_design",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "medium",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "小規模な新規Webの設計確認としての暫定幅である",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "1.00",
+        "most_likely": "2.00",
+        "pessimistic": "3.00",
+        "expected": "2.00",
+        "optimistic_exact": "1",
+        "most_likely_exact": "2",
+        "pessimistic_exact": "3",
+        "expected_exact": "2"
+      },
+      {
+        "id": "WBS-003",
+        "requirement_ids": [
+          "F-002",
+          "F-003"
+        ],
+        "name": "UI実装",
+        "description": "一覧と編集画面を実装する",
+        "phase": "ui_implementation",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "medium",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "画面2つの実装と表示調整としての暫定幅である",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "2.00",
+        "most_likely": "4.00",
+        "pessimistic": "7.00",
+        "expected": "4.17",
+        "optimistic_exact": "2",
+        "most_likely_exact": "4",
+        "pessimistic_exact": "7",
+        "expected_exact": "4.166666666666666666666666667"
+      },
+      {
+        "id": "WBS-004",
+        "requirement_ids": [
+          "F-002"
+        ],
+        "name": "API実装",
+        "description": "タスクの登録、更新、完了APIを実装する",
+        "phase": "api_implementation",
+        "prerequisites": "",
+        "depends_on": [
+          "WBS-005"
+        ],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "medium",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "単一リソースのCRUD APIとしての暫定幅である",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "2.00",
+        "most_likely": "3.00",
+        "pessimistic": "6.00",
+        "expected": "3.33",
+        "optimistic_exact": "2",
+        "most_likely_exact": "3",
+        "pessimistic_exact": "6",
+        "expected_exact": "3.333333333333333333333333333"
+      },
+      {
+        "id": "WBS-005",
+        "requirement_ids": [
+          "F-002"
+        ],
+        "name": "DB設計実装",
+        "description": "タスクと利用者のテーブルを用意する",
+        "phase": "db",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "medium",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "テーブル数が少ない新規スキーマとしての暫定幅である",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "1.00",
+        "most_likely": "2.00",
+        "pessimistic": "4.00",
+        "expected": "2.17",
+        "optimistic_exact": "1",
+        "most_likely_exact": "2",
+        "pessimistic_exact": "4",
+        "expected_exact": "2.166666666666666666666666667"
+      },
+      {
+        "id": "WBS-006",
+        "requirement_ids": [
+          "F-001",
+          "NF-002"
+        ],
+        "name": "認証",
+        "description": "パスワード認証とHTTPS前提のセッションを実装する",
+        "phase": "auth",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "high",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "独自認証を仮定し、社員マスタ連携は悲観値に含めた暫定幅である",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "1.00",
+        "most_likely": "2.00",
+        "pessimistic": "4.00",
+        "expected": "2.17",
+        "optimistic_exact": "1",
+        "most_likely_exact": "2",
+        "pessimistic_exact": "4",
+        "expected_exact": "2.166666666666666666666666667"
+      },
+      {
+        "id": "WBS-007",
+        "requirement_ids": [
+          "F-001",
+          "F-002",
+          "F-003"
+        ],
+        "name": "単体テスト",
+        "description": "主要操作の単体テストを書く",
+        "phase": "unit_test",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "medium",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "機能3つの主要経路に限った暫定幅である",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "1.00",
+        "most_likely": "2.00",
+        "pessimistic": "4.00",
+        "expected": "2.17",
+        "optimistic_exact": "1",
+        "most_likely_exact": "2",
+        "pessimistic_exact": "4",
+        "expected_exact": "2.166666666666666666666666667"
+      },
+      {
+        "id": "WBS-008",
+        "requirement_ids": [
+          "F-001",
+          "F-002",
+          "F-003",
+          "NF-001"
+        ],
+        "name": "結合テスト",
+        "description": "画面からAPIまでの操作を確認する",
+        "phase": "integration_test",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "medium",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "社内の同時20名程度を想定した結合確認の暫定幅である",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "1.00",
+        "most_likely": "2.00",
+        "pessimistic": "5.00",
+        "expected": "2.33",
+        "optimistic_exact": "1",
+        "most_likely_exact": "2",
+        "pessimistic_exact": "5",
+        "expected_exact": "2.333333333333333333333333333"
+      },
+      {
+        "id": "WBS-009",
+        "requirement_ids": [
+          "UNSCOPED"
+        ],
+        "name": "レビュー",
+        "description": "設計と実装のレビューを行う",
+        "phase": "review",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "low",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "小規模案件でレビューを1巡するとした暫定幅である",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "0.50",
+        "most_likely": "1.00",
+        "pessimistic": "2.00",
+        "expected": "1.08",
+        "optimistic_exact": "0.5",
+        "most_likely_exact": "1",
+        "pessimistic_exact": "2",
+        "expected_exact": "1.083333333333333333333333333"
+      },
+      {
+        "id": "WBS-010",
+        "requirement_ids": [
+          "F-001",
+          "F-002",
+          "F-003"
+        ],
+        "name": "不具合修正",
+        "description": "テストで見つかった不具合を修正する",
+        "phase": "defect_fix",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "high",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "新規画面の初回不具合対応としての暫定幅であり、予備率ではない",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "1.00",
+        "most_likely": "2.00",
+        "pessimistic": "5.00",
+        "expected": "2.33",
+        "optimistic_exact": "1",
+        "most_likely_exact": "2",
+        "pessimistic_exact": "5",
+        "expected_exact": "2.333333333333333333333333333"
+      },
+      {
+        "id": "WBS-011",
+        "requirement_ids": [
+          "UNSCOPED"
+        ],
+        "name": "ドキュメント",
+        "description": "操作手順と設定手順を残す",
+        "phase": "documentation",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "low",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "短文の手順書に限った暫定幅である",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "0.50",
+        "most_likely": "1.00",
+        "pessimistic": "2.00",
+        "expected": "1.08",
+        "optimistic_exact": "0.5",
+        "most_likely_exact": "1",
+        "pessimistic_exact": "2",
+        "expected_exact": "1.083333333333333333333333333"
+      },
+      {
+        "id": "WBS-012",
+        "requirement_ids": [
+          "UNSCOPED"
+        ],
+        "name": "進行管理",
+        "description": "課題整理と進捗確認を行う",
+        "phase": "project_management",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "medium",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "割合ではなく作業時間として置いた暫定幅である",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "1.00",
+        "most_likely": "2.00",
+        "pessimistic": "4.00",
+        "expected": "2.17",
+        "optimistic_exact": "1",
+        "most_likely_exact": "2",
+        "pessimistic_exact": "4",
+        "expected_exact": "2.166666666666666666666666667"
+      }
+    ],
+    "cross_check_only": false,
+    "optimistic": "13.00",
+    "most_likely": "25.00",
+    "pessimistic": "50.00",
+    "expected": "27.17",
+    "optimistic_exact": "13.0",
+    "most_likely_exact": "25",
+    "pessimistic_exact": "50",
+    "expected_exact": "27.16666666666666666666666667",
+    "primary_basis": "AI_ESTIMATE",
+    "provenance_totals_exact": {
+      "AI_ESTIMATE": "27.16666666666666666666666667"
+    }
+  },
+  "contingency": {
+    "effort": "0.00",
+    "effort_exact": "0",
+    "effort_unit": "person_day",
+    "reason": "",
+    "covered_risk_ids": []
+  },
+  "summary": {
+    "status": "calculated",
+    "reason": "主方式はWBSの三点見積もりです。補助の実績見積もりは加算していません。",
+    "effort_unit": "person_day",
+    "optimistic": "13.00",
+    "most_likely": "25.00",
+    "pessimistic": "50.00",
+    "expected": "27.17",
+    "contingency": "0.00",
+    "planned": "27.17",
+    "optimistic_exact": "13.0",
+    "most_likely_exact": "25",
+    "pessimistic_exact": "50",
+    "expected_exact": "27.16666666666666666666666667",
+    "contingency_exact": "0",
+    "planned_exact": "27.16666666666666666666666667",
+    "planned_differs_from_expected": false,
+    "planned_difference_reason": "",
+    "primary_basis": "AI_ESTIMATE",
+    "rounding": {
+      "mode": "ROUND_HALF_UP",
+      "effort_places": 2,
+      "money_places": 2,
+      "note": "合計は丸める前の値を加算し、最後に一度だけ丸めます。"
+    }
+  },
+  "cost": {
+    "status": "calculated",
+    "reason": "開発費用 = 計画工数 × 単価。経費は別行です。",
+    "currency": "JPY",
+    "rate": "80000.00",
+    "rate_exact": "80000",
+    "rate_unit": "per_person_day",
+    "rate_basis": {
+      "kind": "ASSUMPTION",
+      "explanation": "利用者がこの概算のために指定した単価であり、市場相場ではない"
+    },
+    "labor": "2173333.33",
+    "labor_exact": "2173333.333333333333333333334",
+    "extra_costs": [],
+    "extra_total": "0.00",
+    "total": "2173333.33",
+    "total_exact": "2173333.333333333333333333334",
+    "conversion": null,
+    "provisional": true
+  },
+  "schedule": {
+    "status": "provisional_lower_bound",
+    "reason": "人数と稼働率だけから求めた経過日数の下限です。確定期間ではありません。",
+    "elapsed_days": "22.64",
+    "elapsed_days_exact": "22.63888888888888888888888889",
+    "team_size": "2",
+    "utilization": "0.6",
+    "calendar_factor": null,
+    "calendar_factor_basis": null,
+    "conversion": null,
+    "limitations": [
+      "タスク依存を考慮したクリティカルパスではありません。",
+      "レビュー待ちや外部回答待ちを含みません。",
+      "非稼働日は calendar_factor を指定した場合だけ、その仮定として含みます。",
+      "確定した開発期間ではありません。"
+    ],
+    "confirmed": false
+  },
+  "warnings": [
+    "主方式の工数にはAIによる暫定推定が含まれます。精度が高い見積もりではありません。"
+  ],
+  "unestimated_items": []
+}

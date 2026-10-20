@@ -1,0 +1,279 @@
+{
+  "schema_version": "1.0",
+  "calculator_version": "0.1.0",
+  "meta": {
+    "system_name": "架空の類似Webアプリ",
+    "purpose": "類似実績がある場合のデモ",
+    "estimation_date": "2026-10-20",
+    "input_summary": "機能数8の新規Web。類似する架空実績が3件ある",
+    "effort_unit": "person_day",
+    "hours_per_person_day": null
+  },
+  "scope": {
+    "functions": [
+      {
+        "id": "F-001",
+        "name": "対象機能群",
+        "description": "機能数8として数えた新規Webの機能"
+      }
+    ],
+    "non_functional": [],
+    "out_of_scope": [
+      "インフラ新規構築"
+    ],
+    "unknowns": []
+  },
+  "assumptions": [
+    {
+      "id": "A-001",
+      "statement": "機能数の数え方は過去3件と同じである",
+      "impact": "規模按分の前提"
+    },
+    {
+      "id": "A-002",
+      "statement": "実績は架空のデモデータである",
+      "impact": "本番の根拠にはしない"
+    }
+  ],
+  "risks": [],
+  "method": {
+    "primary": "historical",
+    "auxiliary": "cold-start",
+    "reason": "類似し規模按分できる実績が 3 件あり、方針の 3 件以上を満たすため historical を主方式にしました。",
+    "override": false,
+    "policy": {
+      "similarity_threshold": "0.60",
+      "minimum_records_for_historical_primary": 3,
+      "minimum_category_jaccard_for_scaling": "0.50",
+      "similarity_weights": {
+        "project_type": "0.35",
+        "project_scope": "0.20",
+        "technology": "0.25",
+        "work_categories": "0.20"
+      },
+      "note": "これらは本ツールの方針であり、IPA等の公的基準ではない。"
+    }
+  },
+  "history_evaluation": {
+    "loaded_count": 3,
+    "valid_count": 3,
+    "similar_count": 3,
+    "usable_for_scaling_count": 3,
+    "fictional_records_present": true,
+    "can_be_primary": true,
+    "records": [
+      {
+        "project_id": "DEMO-001",
+        "valid": true,
+        "validity_issues": [],
+        "fictional": true,
+        "anomaly": false,
+        "anomaly_reason": "",
+        "similarity": "1.0000",
+        "similarity_components": {
+          "project_type": "1",
+          "project_scope": "1",
+          "technology": "1.0000",
+          "work_categories": "1.0000"
+        },
+        "type_cap_applied": false,
+        "above_threshold": true,
+        "usable_for_scaling": true,
+        "exclusion_reasons": [],
+        "unit_rate": "5",
+        "notes": "架空"
+      },
+      {
+        "project_id": "DEMO-002",
+        "valid": true,
+        "validity_issues": [],
+        "fictional": true,
+        "anomaly": false,
+        "anomaly_reason": "",
+        "similarity": "1.0000",
+        "similarity_components": {
+          "project_type": "1",
+          "project_scope": "1",
+          "technology": "1.0000",
+          "work_categories": "1.0000"
+        },
+        "type_cap_applied": false,
+        "above_threshold": true,
+        "usable_for_scaling": true,
+        "exclusion_reasons": [],
+        "unit_rate": "4.8",
+        "notes": "架空"
+      },
+      {
+        "project_id": "DEMO-003",
+        "valid": true,
+        "validity_issues": [],
+        "fictional": true,
+        "anomaly": false,
+        "anomaly_reason": "",
+        "similarity": "1.0000",
+        "similarity_components": {
+          "project_type": "1",
+          "project_scope": "1",
+          "technology": "1.0000",
+          "work_categories": "1.0000"
+        },
+        "type_cap_applied": false,
+        "above_threshold": true,
+        "usable_for_scaling": true,
+        "exclusion_reasons": [],
+        "unit_rate": "4.5",
+        "notes": "架空"
+      }
+    ]
+  },
+  "historical_estimate": {
+    "status": "calculated",
+    "reason": "類似実績の単位工数（実績工数÷規模）の最小・中央・最大に対象規模を掛けました。最小と最大は統計的な信頼区間ではありません。",
+    "used_record_ids": [
+      "DEMO-001",
+      "DEMO-002",
+      "DEMO-003"
+    ],
+    "size_kind": "feature_count",
+    "size_value": "8",
+    "unit_rates": [
+      {
+        "project_id": "DEMO-001",
+        "rate": "5",
+        "effort_unit": "person_day"
+      },
+      {
+        "project_id": "DEMO-002",
+        "rate": "4.8",
+        "effort_unit": "person_day"
+      },
+      {
+        "project_id": "DEMO-003",
+        "rate": "4.5",
+        "effort_unit": "person_day"
+      }
+    ],
+    "optimistic": "36.00",
+    "most_likely": "38.40",
+    "pessimistic": "40.00",
+    "expected": "38.27",
+    "optimistic_exact": "36.0",
+    "most_likely_exact": "38.4",
+    "pessimistic_exact": "40",
+    "expected_exact": "38.26666666666666666666666667",
+    "provisional": true,
+    "provisional_reason": "按分に使った実績は 3 件です。10件未満のため暫定値です。PERT期待値は保証値ではありません。",
+    "single_point": false,
+    "effort_unit": "person_day",
+    "applied_note": "この値をWBSへ加算しません。主方式が historical のときだけ計画工数になります。"
+  },
+  "benchmark": {
+    "status": "not_requested",
+    "reason": "外部ベンチマーク照合は依頼されていません。",
+    "applied_to_plan": false
+  },
+  "wbs": {
+    "status": "calculated",
+    "reason": "",
+    "effort_unit": "person_day",
+    "lines": [
+      {
+        "id": "WBS-001",
+        "requirement_ids": [
+          "F-001"
+        ],
+        "name": "照合用の概算",
+        "description": "実績と並べるための粗いWBS",
+        "phase": "implementation",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "high",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "照合用の暫定値であり、実績見積もりへ加算しない",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "10.00",
+        "most_likely": "12.00",
+        "pessimistic": "16.00",
+        "expected": "12.33",
+        "optimistic_exact": "10",
+        "most_likely_exact": "12",
+        "pessimistic_exact": "16",
+        "expected_exact": "12.33333333333333333333333333"
+      }
+    ],
+    "cross_check_only": true,
+    "optimistic": "10.00",
+    "most_likely": "12.00",
+    "pessimistic": "16.00",
+    "expected": "12.33",
+    "optimistic_exact": "10",
+    "most_likely_exact": "12",
+    "pessimistic_exact": "16",
+    "expected_exact": "12.33333333333333333333333333",
+    "primary_basis": "AI_ESTIMATE",
+    "provenance_totals_exact": {
+      "AI_ESTIMATE": "12.33333333333333333333333333"
+    }
+  },
+  "contingency": {
+    "effort": "0.00",
+    "effort_exact": "0",
+    "effort_unit": "person_day",
+    "reason": "",
+    "covered_risk_ids": []
+  },
+  "summary": {
+    "status": "calculated",
+    "reason": "主方式は類似実績の規模按分です。WBS合計は加算していません。",
+    "effort_unit": "person_day",
+    "optimistic": "36.00",
+    "most_likely": "38.40",
+    "pessimistic": "40.00",
+    "expected": "38.27",
+    "contingency": "0.00",
+    "planned": "38.27",
+    "optimistic_exact": "36.0",
+    "most_likely_exact": "38.4",
+    "pessimistic_exact": "40",
+    "expected_exact": "38.26666666666666666666666667",
+    "contingency_exact": "0",
+    "planned_exact": "38.26666666666666666666666667",
+    "planned_differs_from_expected": false,
+    "planned_difference_reason": "",
+    "primary_basis": "HISTORICAL",
+    "rounding": {
+      "mode": "ROUND_HALF_UP",
+      "effort_places": 2,
+      "money_places": 2,
+      "note": "合計は丸める前の値を加算し、最後に一度だけ丸めます。"
+    }
+  },
+  "cost": {
+    "status": "not_calculated",
+    "reason": "人日単価または人時単価が指定されていません。"
+  },
+  "schedule": {
+    "status": "not_calculated",
+    "reason": "稼働人数または稼働率が指定されていません。工数÷人数の確定期間は出しません。",
+    "limitations": [
+      "タスク依存を考慮したクリティカルパスではありません。",
+      "レビュー待ちや外部回答待ちを含みません。",
+      "非稼働日は calendar_factor を指定した場合だけ、その仮定として含みます。",
+      "確定した開発期間ではありません。"
+    ]
+  },
+  "warnings": [
+    "実績に架空データが含まれます。本番の見積根拠にしないでください。",
+    "按分に使った実績は 3 件です。10件未満のため暫定値です。PERT期待値は保証値ではありません。"
+  ],
+  "unestimated_items": []
+}

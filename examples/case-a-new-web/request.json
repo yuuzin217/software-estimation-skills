@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0",
+  "meta": {
+    "system_name": "架空の社内タスク管理Web",
+    "purpose": "予算取り前の概算",
+    "estimation_date": "2026-10-20",
+    "input_summary": "新規の小規模Web。実績データは無い",
+    "effort_unit": "person_day"
+  },
+  "scope": {
+    "functions": [
+      {"id": "F-001", "name": "ログイン", "description": "メールとパスワードでログインする"},
+      {"id": "F-002", "name": "タスク操作", "description": "タスクを登録、更新、完了する"},
+      {"id": "F-003", "name": "一覧絞り込み", "description": "担当者と期限でタスクを絞り込む"}
+    ],
+    "non_functional": [
+      {"id": "NF-001", "name": "利用規模", "description": "同時利用はおおむね20名。社内ネットワークからの利用"},
+      {"id": "NF-002", "name": "通信", "description": "HTTPSで提供する"}
+    ],
+    "out_of_scope": [
+      "モバイルアプリ",
+      "データ移行",
+      "インフラの新規構築",
+      "CI/CDの新設",
+      "発注者による受入テスト"
+    ],
+    "unknowns": ["既存の社員マスタを使うかは未確認"]
+  },
+  "assumptions": [
+    {"id": "A-001", "statement": "画面はログイン、一覧、編集の3画面程度である", "impact": "UI工数の最頻値"},
+    {"id": "A-002", "statement": "既存の社内実行環境を使い、インフラ構築は対象外である", "impact": "インフラ項目を作らない"}
+  ],
+  "risks": [
+    {
+      "id": "R-001",
+      "description": "社員マスタ連携が必要になる",
+      "trigger": "独自の利用者登録が許されない",
+      "impact_area": "認証",
+      "estimation_impact": "認証作業の悲観値に含めた",
+      "response": "確定後に認証項目だけ再見積もりする",
+      "already_in_three_point": true
+    }
+  ],
+  "wbs": [
+    {"id": "WBS-001", "requirement_ids": ["F-001", "F-002", "F-003"], "name": "要件整理", "description": "画面と操作の受入条件を確認する", "phase": "requirements", "estimable": true, "optimistic": "1", "most_likely": "2", "pessimistic": "4", "uncertainty": "medium", "provisional": true, "basis": {"kind": "AI_ESTIMATE", "explanation": "画面3つの確認作業としての暫定幅であり、標準生産性ではない"}},
+    {"id": "WBS-002", "requirement_ids": ["F-001", "F-002", "F-003"], "name": "基本設計", "description": "画面遷移とデータの骨格を決める", "phase": "basic_design", "estimable": true, "optimistic": "1", "most_likely": "2", "pessimistic": "3", "uncertainty": "medium", "provisional": true, "basis": {"kind": "AI_ESTIMATE", "explanation": "小規模な新規Webの設計確認としての暫定幅である"}},
+    {"id": "WBS-003", "requirement_ids": ["F-002", "F-003"], "name": "UI実装", "description": "一覧と編集画面を実装する", "phase": "ui_implementation", "estimable": true, "optimistic": "2", "most_likely": "4", "pessimistic": "7", "uncertainty": "medium", "provisional": true, "basis": {"kind": "AI_ESTIMATE", "explanation": "画面2つの実装と表示調整としての暫定幅である"}},
+    {"id": "WBS-004", "requirement_ids": ["F-002"], "name": "API実装", "description": "タスクの登録、更新、完了APIを実装する", "phase": "api_implementation", "depends_on": ["WBS-005"], "estimable": true, "optimistic": "2", "most_likely": "3", "pessimistic": "6", "uncertainty": "medium", "provisional": true, "basis": {"kind": "AI_ESTIMATE", "explanation": "単一リソースのCRUD APIとしての暫定幅である"}},
+    {"id": "WBS-005", "requirement_ids": ["F-002"], "name": "DB設計実装", "description": "タスクと利用者のテーブルを用意する", "phase": "db", "estimable": true, "optimistic": "1", "most_likely": "2", "pessimistic": "4", "uncertainty": "medium", "provisional": true, "basis": {"kind": "AI_ESTIMATE", "explanation": "テーブル数が少ない新規スキーマとしての暫定幅である"}},
+    {"id": "WBS-006", "requirement_ids": ["F-001", "NF-002"], "name": "認証", "description": "パスワード認証とHTTPS前提のセッションを実装する", "phase": "auth", "estimable": true, "optimistic": "1", "most_likely": "2", "pessimistic": "4", "uncertainty": "high", "provisional": true, "basis": {"kind": "AI_ESTIMATE", "explanation": "独自認証を仮定し、社員マスタ連携は悲観値に含めた暫定幅である"}},
+    {"id": "WBS-007", "requirement_ids": ["F-001", "F-002", "F-003"], "name": "単体テスト", "description": "主要操作の単体テストを書く", "phase": "unit_test", "estimable": true, "optimistic": "1", "most_likely": "2", "pessimistic": "4", "uncertainty": "medium", "provisional": true, "basis": {"kind": "AI_ESTIMATE", "explanation": "機能3つの主要経路に限った暫定幅である"}},
+    {"id": "WBS-008", "requirement_ids": ["F-001", "F-002", "F-003", "NF-001"], "name": "結合テスト", "description": "画面からAPIまでの操作を確認する", "phase": "integration_test", "estimable": true, "optimistic": "1", "most_likely": "2", "pessimistic": "5", "uncertainty": "medium", "provisional": true, "basis": {"kind": "AI_ESTIMATE", "explanation": "社内の同時20名程度を想定した結合確認の暫定幅である"}},
+    {"id": "WBS-009", "requirement_ids": ["UNSCOPED"], "name": "レビュー", "description": "設計と実装のレビューを行う", "phase": "review", "estimable": true, "optimistic": "0.5", "most_likely": "1", "pessimistic": "2", "uncertainty": "low", "provisional": true, "basis": {"kind": "AI_ESTIMATE", "explanation": "小規模案件でレビューを1巡するとした暫定幅である"}},
+    {"id": "WBS-010", "requirement_ids": ["F-001", "F-002", "F-003"], "name": "不具合修正", "description": "テストで見つかった不具合を修正する", "phase": "defect_fix", "estimable": true, "optimistic": "1", "most_likely": "2", "pessimistic": "5", "uncertainty": "high", "provisional": true, "basis": {"kind": "AI_ESTIMATE", "explanation": "新規画面の初回不具合対応としての暫定幅であり、予備率ではない"}},
+    {"id": "WBS-011", "requirement_ids": ["UNSCOPED"], "name": "ドキュメント", "description": "操作手順と設定手順を残す", "phase": "documentation", "estimable": true, "optimistic": "0.5", "most_likely": "1", "pessimistic": "2", "uncertainty": "low", "provisional": true, "basis": {"kind": "AI_ESTIMATE", "explanation": "短文の手順書に限った暫定幅である"}},
+    {"id": "WBS-012", "requirement_ids": ["UNSCOPED"], "name": "進行管理", "description": "課題整理と進捗確認を行う", "phase": "project_management", "estimable": true, "optimistic": "1", "most_likely": "2", "pessimistic": "4", "uncertainty": "medium", "provisional": true, "basis": {"kind": "AI_ESTIMATE", "explanation": "割合ではなく作業時間として置いた暫定幅である"}}
+  ],
+  "cost": {
+    "rate": "80000",
+    "rate_unit": "per_person_day",
+    "currency": "JPY",
+    "rate_basis": {"kind": "ASSUMPTION", "explanation": "利用者がこの概算のために指定した単価であり、市場相場ではない"}
+  },
+  "schedule": {"team_size": "2", "utilization": "0.6"},
+  "benchmark": {
+    "catalog_id": "ipa-2022-sloc-productivity-new-under-40ksloc",
+    "development_type": "new",
+    "size_unit": "sloc",
+    "target_size": null,
+    "confirmed_phases": ["implementation"],
+    "acknowledge_population_limits": false,
+    "population_note": "実効SLOCが無く、開発5工程とも一致しないため換算しない。"
+  }
+}

@@ -1,0 +1,278 @@
+{
+  "schema_version": "1.0",
+  "calculator_version": "0.1.0",
+  "meta": {
+    "system_name": "既存の在庫管理",
+    "purpose": "改修案件の見積もり",
+    "estimation_date": "2026-10-20",
+    "input_summary": "既存在庫検索へ条件を1つ追加する",
+    "effort_unit": "person_day",
+    "hours_per_person_day": null
+  },
+  "scope": {
+    "functions": [
+      {
+        "id": "F-001",
+        "name": "検索条件の追加",
+        "description": "既存の在庫検索へ保管場所の条件を追加する"
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "NF-001",
+        "name": "既存操作の維持",
+        "description": "追加以外の検索結果を変えない"
+      }
+    ],
+    "out_of_scope": [
+      "在庫システムの全面再設計",
+      "インフラの作り直し",
+      "マスタ移行"
+    ],
+    "unknowns": [
+      "検索SQLの現行の複雑さ"
+    ]
+  },
+  "assumptions": [
+    {
+      "id": "A-001",
+      "statement": "既存の認証、画面枠、テーブルを流用する",
+      "impact": "新規基盤の項目を作らない"
+    }
+  ],
+  "risks": [
+    {
+      "id": "R-001",
+      "description": "既存検索の副作用",
+      "trigger": "共通SQLを変更する必要がある",
+      "impact_area": "回帰テスト",
+      "estimation_impact": "回帰テストの悲観値に含めた",
+      "response": "変更前後の結果を比較する",
+      "already_in_three_point": true
+    }
+  ],
+  "method": {
+    "primary": "cold-start",
+    "auxiliary": "none",
+    "reason": "採用できる類似実績が無いため、cold-start を主方式にしました。",
+    "override": false,
+    "policy": {
+      "similarity_threshold": "0.60",
+      "minimum_records_for_historical_primary": 3,
+      "minimum_category_jaccard_for_scaling": "0.50",
+      "similarity_weights": {
+        "project_type": "0.35",
+        "project_scope": "0.20",
+        "technology": "0.25",
+        "work_categories": "0.20"
+      },
+      "note": "これらは本ツールの方針であり、IPA等の公的基準ではない。"
+    }
+  },
+  "history_evaluation": {
+    "loaded_count": 0,
+    "valid_count": 0,
+    "similar_count": 0,
+    "usable_for_scaling_count": 0,
+    "fictional_records_present": false,
+    "can_be_primary": false,
+    "records": []
+  },
+  "historical_estimate": {
+    "status": "not_calculated",
+    "reason": "類似し、規模指標と工程が対応する実績が不足しています。",
+    "used_record_ids": [],
+    "effort_unit": "person_day"
+  },
+  "benchmark": {
+    "status": "not_applied",
+    "catalog_id": "ipa-2022-sloc-productivity-enhancement-under-20ksloc",
+    "reason": "適合条件を満たさないため、工数へ換算しません。",
+    "rejection_reasons": [
+      "confirmed_phases が資料の開発5工程と一致しません。工程範囲が違う数値を係数で補正することはしません。",
+      "acknowledge_population_limits が true ではありません。母集団の限界を確認してください。",
+      "target_size が無いため、規模から工数へ換算しません。"
+    ],
+    "source": {
+      "title": "ソフトウェア開発分析データ集2022",
+      "publisher": "独立行政法人情報処理推進機構（IPA）",
+      "published": "2022-09-26",
+      "table": "表A1-2-2 20KSLOC未満",
+      "url": "https://www.ipa.go.jp/digital/software-survey/metrics/hjuojm000000c6it-att/000102171.pdf",
+      "landing_url": "https://www.ipa.go.jp/digital/software-survey/metrics/metrics2022.html",
+      "period": "2016年度〜2021年度（同書で特に断りのない集計期間）",
+      "population": "表A1-2-2のうち実効SLOCが20KSLOC未満の改良開発",
+      "n": 243
+    },
+    "limitations": [
+      "20KSLOC未満の規模帯だけに対応する。境界値20,000SLOCは含まない",
+      "その他の制約は改良開発・全体と同じ"
+    ],
+    "applied_to_plan": false
+  },
+  "wbs": {
+    "status": "calculated",
+    "reason": "",
+    "effort_unit": "person_day",
+    "lines": [
+      {
+        "id": "WBS-001",
+        "requirement_ids": [
+          "F-001"
+        ],
+        "name": "影響調査",
+        "description": "検索SQLと画面の変更箇所を特定する",
+        "phase": "impact_analysis",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "high",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "現行SQLの複雑さが未知なための暫定幅である",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "0.50",
+        "most_likely": "1.00",
+        "pessimistic": "3.00",
+        "expected": "1.25",
+        "optimistic_exact": "0.5",
+        "most_likely_exact": "1",
+        "pessimistic_exact": "3",
+        "expected_exact": "1.25"
+      },
+      {
+        "id": "WBS-002",
+        "requirement_ids": [
+          "F-001"
+        ],
+        "name": "条件追加",
+        "description": "検索条件とAPIを追加する",
+        "phase": "api_implementation",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "medium",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "条件1つの追加としての暫定幅である",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "1.00",
+        "most_likely": "2.00",
+        "pessimistic": "4.00",
+        "expected": "2.17",
+        "optimistic_exact": "1",
+        "most_likely_exact": "2",
+        "pessimistic_exact": "4",
+        "expected_exact": "2.166666666666666666666666667"
+      },
+      {
+        "id": "WBS-003",
+        "requirement_ids": [
+          "F-001",
+          "NF-001"
+        ],
+        "name": "回帰テスト",
+        "description": "既存の検索結果が変わらないことを確認する",
+        "phase": "regression_test",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "medium",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "既存検索の代表ケースを再確認する暫定幅である",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "1.00",
+        "most_likely": "2.00",
+        "pessimistic": "4.00",
+        "expected": "2.17",
+        "optimistic_exact": "1",
+        "most_likely_exact": "2",
+        "pessimistic_exact": "4",
+        "expected_exact": "2.166666666666666666666666667"
+      }
+    ],
+    "cross_check_only": false,
+    "optimistic": "2.50",
+    "most_likely": "5.00",
+    "pessimistic": "11.00",
+    "expected": "5.58",
+    "optimistic_exact": "2.5",
+    "most_likely_exact": "5",
+    "pessimistic_exact": "11",
+    "expected_exact": "5.583333333333333333333333334",
+    "primary_basis": "AI_ESTIMATE",
+    "provenance_totals_exact": {
+      "AI_ESTIMATE": "5.583333333333333333333333334"
+    }
+  },
+  "contingency": {
+    "effort": "0.00",
+    "effort_exact": "0",
+    "effort_unit": "person_day",
+    "reason": "",
+    "covered_risk_ids": []
+  },
+  "summary": {
+    "status": "calculated",
+    "reason": "主方式はWBSの三点見積もりです。補助の実績見積もりは加算していません。",
+    "effort_unit": "person_day",
+    "optimistic": "2.50",
+    "most_likely": "5.00",
+    "pessimistic": "11.00",
+    "expected": "5.58",
+    "contingency": "0.00",
+    "planned": "5.58",
+    "optimistic_exact": "2.5",
+    "most_likely_exact": "5",
+    "pessimistic_exact": "11",
+    "expected_exact": "5.583333333333333333333333334",
+    "contingency_exact": "0",
+    "planned_exact": "5.583333333333333333333333334",
+    "planned_differs_from_expected": false,
+    "planned_difference_reason": "",
+    "primary_basis": "AI_ESTIMATE",
+    "rounding": {
+      "mode": "ROUND_HALF_UP",
+      "effort_places": 2,
+      "money_places": 2,
+      "note": "合計は丸める前の値を加算し、最後に一度だけ丸めます。"
+    }
+  },
+  "cost": {
+    "status": "not_calculated",
+    "reason": "人日単価または人時単価が指定されていません。"
+  },
+  "schedule": {
+    "status": "not_calculated",
+    "reason": "稼働人数または稼働率が指定されていません。工数÷人数の確定期間は出しません。",
+    "limitations": [
+      "タスク依存を考慮したクリティカルパスではありません。",
+      "レビュー待ちや外部回答待ちを含みません。",
+      "非稼働日は calendar_factor を指定した場合だけ、その仮定として含みます。",
+      "確定した開発期間ではありません。"
+    ]
+  },
+  "warnings": [
+    "主方式の工数にはAIによる暫定推定が含まれます。精度が高い見積もりではありません。"
+  ],
+  "unestimated_items": []
+}

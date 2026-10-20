@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "meta": {
+    "system_name": "新規の社内Web",
+    "purpose": "非類似実績を採用しないことの確認",
+    "estimation_date": "2026-10-20",
+    "input_summary": "新規Web。手元の実績は組込み開発だけ",
+    "effort_unit": "person_day"
+  },
+  "scope": {
+    "functions": [
+      {"id": "F-001", "name": "問い合わせフォーム", "description": "入力内容を保存して担当者へ通知する"}
+    ],
+    "non_functional": [],
+    "out_of_scope": ["組込み機器の制御"],
+    "unknowns": []
+  },
+  "assumptions": [
+    {"id": "A-001", "statement": "単一フォームの新規Webである", "impact": "WBSを1機能に限定した"}
+  ],
+  "risks": [],
+  "comparison_profile": {
+    "project_type": "new_web_app",
+    "project_scope": "new",
+    "technology_stack": ["python", "react"],
+    "work_categories": ["implementation", "test"]
+  },
+  "target_size": {"kind": "feature_count", "value": "8"},
+  "history": {"allow_fictional": true, "path": "history.json"},
+  "wbs": [
+    {
+      "id": "WBS-001",
+      "requirement_ids": ["F-001"],
+      "name": "フォーム実装",
+      "description": "保存と通知を含むフォームを実装する",
+      "phase": "implementation",
+      "estimable": true,
+      "optimistic": "2",
+      "most_likely": "3",
+      "pessimistic": "5",
+      "uncertainty": "medium",
+      "provisional": true,
+      "basis": {"kind": "AI_ESTIMATE", "explanation": "単一フォームの暫定幅であり、組込み実績からは按分していない"}
+    }
+  ]
+}

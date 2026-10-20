@@ -1,0 +1,209 @@
+{
+  "catalog_version": "1.0",
+  "note": "数値はIPA『ソフトウェア開発分析データ集2022』からの引用である。PDF本文は再配布していない。計画工数の置換には使わない。",
+  "entries": [
+    {
+      "id": "ipa-2022-sloc-productivity-new-overall",
+      "calculable": true,
+      "small_sample": false,
+      "metric": "sloc_per_person_hour",
+      "size_unit": "sloc",
+      "development_type": "new",
+      "phases": [
+        "basic_design",
+        "detailed_design",
+        "implementation",
+        "integration_test",
+        "system_test_vendor"
+      ],
+      "n": 307,
+      "p25": "2.27",
+      "median": "3.76",
+      "p75": "6.25",
+      "min": "0.00",
+      "max": "714.25",
+      "mean": "7.93",
+      "stddev": "41.65",
+      "period": "2016年度〜2021年度（同書で特に断りのない集計期間）",
+      "table": "表A1-2-1 全体",
+      "population": "主開発言語が明確で、開発5工程がそろい、実効SLOCとSLOC生産性が正の新規開発",
+      "limitations": [
+        "無作為抽出ではない",
+        "エンタプライズ系プロジェクトが中心であり、小規模なクラウド開発やAI支援開発の生産性ではない",
+        "分母は開発5工程（基本設計から総合テスト（ベンダ確認））の工数",
+        "SLOCはコメント行と空行を除いた実効行数",
+        "1人月=160時間はIPAが人時を人月表示するときの代用であり、本ツールの人日換算には使わない",
+        "平均は外れ値の影響が大きく、照合にはP25・中央・P75だけを使う",
+        "中央値は保証値ではない"
+      ]
+    },
+    {
+      "id": "ipa-2022-sloc-productivity-new-under-40ksloc",
+      "calculable": true,
+      "small_sample": false,
+      "metric": "sloc_per_person_hour",
+      "size_unit": "sloc",
+      "development_type": "new",
+      "phases": [
+        "basic_design",
+        "detailed_design",
+        "implementation",
+        "integration_test",
+        "system_test_vendor"
+      ],
+      "size_band": {"min_inclusive": "0", "max_exclusive": "40000"},
+      "n": 140,
+      "p25": "1.97",
+      "median": "2.95",
+      "p75": "5.14",
+      "min": "0.00",
+      "max": "22.92",
+      "mean": "3.94",
+      "stddev": "3.34",
+      "period": "2016年度〜2021年度（同書で特に断りのない集計期間）",
+      "table": "表A1-2-1 40KSLOC未満",
+      "population": "表A1-2-1のうち実効SLOCが40KSLOC未満の新規開発",
+      "limitations": [
+        "40KSLOC未満の規模帯だけに対応する。境界値40,000SLOCは含まない",
+        "その他の制約は新規開発・全体と同じ"
+      ]
+    },
+    {
+      "id": "ipa-2022-sloc-productivity-enhancement-overall",
+      "calculable": true,
+      "small_sample": false,
+      "metric": "sloc_per_person_hour",
+      "size_unit": "sloc",
+      "development_type": "enhancement",
+      "phases": [
+        "basic_design",
+        "detailed_design",
+        "implementation",
+        "integration_test",
+        "system_test_vendor"
+      ],
+      "n": 522,
+      "p25": "1.54",
+      "median": "3.01",
+      "p75": "4.90",
+      "min": "0.00",
+      "max": "86.97",
+      "mean": "4.12",
+      "stddev": "5.60",
+      "period": "2016年度〜2021年度（同書で特に断りのない集計期間）",
+      "table": "表A1-2-2 全体",
+      "population": "改修・保守または拡張として層別された改良開発。開発5工程がそろい、主開発言語が明確なもの",
+      "limitations": [
+        "改良開発の定義はIPAの層別（改修・保守または拡張）に従う",
+        "母体を含む規模ではない。SLOCの測り方が異なる改修には適用しない",
+        "その他の制約は新規開発のSLOC生産性と同じ"
+      ]
+    },
+    {
+      "id": "ipa-2022-sloc-productivity-enhancement-under-20ksloc",
+      "calculable": true,
+      "small_sample": false,
+      "metric": "sloc_per_person_hour",
+      "size_unit": "sloc",
+      "development_type": "enhancement",
+      "phases": [
+        "basic_design",
+        "detailed_design",
+        "implementation",
+        "integration_test",
+        "system_test_vendor"
+      ],
+      "size_band": {"min_inclusive": "0", "max_exclusive": "20000"},
+      "n": 243,
+      "p25": "0.95",
+      "median": "1.79",
+      "p75": "3.68",
+      "min": "0.00",
+      "max": "29.61",
+      "mean": "2.67",
+      "stddev": "2.86",
+      "period": "2016年度〜2021年度（同書で特に断りのない集計期間）",
+      "table": "表A1-2-2 20KSLOC未満",
+      "population": "表A1-2-2のうち実効SLOCが20KSLOC未満の改良開発",
+      "limitations": [
+        "20KSLOC未満の規模帯だけに対応する。境界値20,000SLOCは含まない",
+        "その他の制約は改良開発・全体と同じ"
+      ]
+    },
+    {
+      "id": "ipa-2022-fp-productivity-new-overall",
+      "calculable": true,
+      "small_sample": true,
+      "metric": "fp_per_person_hour",
+      "size_unit": "fp",
+      "development_type": "new",
+      "phases": [
+        "basic_design",
+        "detailed_design",
+        "implementation",
+        "integration_test",
+        "system_test_vendor"
+      ],
+      "n": 46,
+      "p25": "0.040",
+      "median": "0.151",
+      "p75": "0.285",
+      "min": "0.012",
+      "max": "2.017",
+      "mean": "0.207",
+      "stddev": "0.302",
+      "period": "2016年度〜2021年度（同書で特に断りのない集計期間）",
+      "table": "表A2-2-1 全体",
+      "population": "計測手法が明確な調整前FPを持つ新規開発",
+      "limitations": [
+        "N=46であり、同書は件数が少ないため生産性の上下には言及していない",
+        "本ツールでも計画工数へは採用せず、参考値としてのみ示す",
+        "調整前FP（未調整ファンクションポイント）だけが対象",
+        "開発5工程の工数が分母"
+      ]
+    },
+    {
+      "id": "ipa-2022-profile-project-effort",
+      "calculable": false,
+      "small_sample": false,
+      "metric": "project_effort_person_hour",
+      "n": 1444,
+      "p25": "3105",
+      "median": "7395",
+      "p75": "20446",
+      "min": "6",
+      "max": "977760",
+      "mean": "24458",
+      "stddev": "59846",
+      "period": "2016年度〜2021年度（同書で特に断りのない集計期間）",
+      "table": "表1-3-4",
+      "population": "プロジェクト全体の工数（人時換算）が得られた案件",
+      "not_calculable_reason": "母集団の工数プロファイルであり、個別案件の工数へ換算する指標ではない。",
+      "limitations": [
+        "中央値7395人時は、小規模Webアプリの見積もり目標値ではない",
+        "開発5工程ではなくプロジェクト全体の工数"
+      ]
+    },
+    {
+      "id": "ipa-2022-profile-project-duration-months",
+      "calculable": false,
+      "small_sample": false,
+      "metric": "project_duration_month",
+      "n": 1396,
+      "p25": "6.0",
+      "median": "10.1",
+      "p75": "15.0",
+      "min": "0.3",
+      "max": "52.7",
+      "mean": "11.5",
+      "stddev": "7.4",
+      "period": "2016年度〜2021年度（同書で特に断りのない集計期間）",
+      "table": "表1-3-3",
+      "population": "プロジェクト全体の月数が得られた案件",
+      "not_calculable_reason": "母集団の工期プロファイルであり、工数から期間を決める式ではない。",
+      "limitations": [
+        "中央値10.1カ月を、本件の開発期間として採用してはならない"
+      ]
+    }
+  ]
+}

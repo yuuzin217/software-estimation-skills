@@ -1,0 +1,199 @@
+{
+  "schema_version": "1.0",
+  "calculator_version": "0.1.0",
+  "meta": {
+    "system_name": "新規の社内Web",
+    "purpose": "非類似実績を採用しないことの確認",
+    "estimation_date": "2026-10-20",
+    "input_summary": "新規Web。手元の実績は組込み開発だけ",
+    "effort_unit": "person_day",
+    "hours_per_person_day": null
+  },
+  "scope": {
+    "functions": [
+      {
+        "id": "F-001",
+        "name": "問い合わせフォーム",
+        "description": "入力内容を保存して担当者へ通知する"
+      }
+    ],
+    "non_functional": [],
+    "out_of_scope": [
+      "組込み機器の制御"
+    ],
+    "unknowns": []
+  },
+  "assumptions": [
+    {
+      "id": "A-001",
+      "statement": "単一フォームの新規Webである",
+      "impact": "WBSを1機能に限定した"
+    }
+  ],
+  "risks": [],
+  "method": {
+    "primary": "cold-start",
+    "auxiliary": "none",
+    "reason": "採用できる類似実績が無いため、cold-start を主方式にしました。",
+    "override": false,
+    "policy": {
+      "similarity_threshold": "0.60",
+      "minimum_records_for_historical_primary": 3,
+      "minimum_category_jaccard_for_scaling": "0.50",
+      "similarity_weights": {
+        "project_type": "0.35",
+        "project_scope": "0.20",
+        "technology": "0.25",
+        "work_categories": "0.20"
+      },
+      "note": "これらは本ツールの方針であり、IPA等の公的基準ではない。"
+    }
+  },
+  "history_evaluation": {
+    "loaded_count": 1,
+    "valid_count": 1,
+    "similar_count": 0,
+    "usable_for_scaling_count": 0,
+    "fictional_records_present": true,
+    "can_be_primary": false,
+    "records": [
+      {
+        "project_id": "EMB-001",
+        "valid": true,
+        "validity_issues": [],
+        "fictional": true,
+        "anomaly": false,
+        "anomaly_reason": "",
+        "similarity": "0.4000",
+        "similarity_components": {
+          "project_type": "0",
+          "project_scope": "1",
+          "technology": "0.0000",
+          "work_categories": "1.0000"
+        },
+        "type_cap_applied": true,
+        "above_threshold": false,
+        "usable_for_scaling": false,
+        "exclusion_reasons": [
+          "類似度 0.4000 が方針上の下限 0.60 未満です。"
+        ],
+        "unit_rate": null,
+        "notes": "架空の組込み開発"
+      }
+    ]
+  },
+  "historical_estimate": {
+    "status": "not_calculated",
+    "reason": "類似し、規模指標と工程が対応する実績が不足しています。",
+    "used_record_ids": [],
+    "effort_unit": "person_day"
+  },
+  "benchmark": {
+    "status": "not_requested",
+    "reason": "外部ベンチマーク照合は依頼されていません。",
+    "applied_to_plan": false
+  },
+  "wbs": {
+    "status": "calculated",
+    "reason": "",
+    "effort_unit": "person_day",
+    "lines": [
+      {
+        "id": "WBS-001",
+        "requirement_ids": [
+          "F-001"
+        ],
+        "name": "フォーム実装",
+        "description": "保存と通知を含むフォームを実装する",
+        "phase": "implementation",
+        "prerequisites": "",
+        "depends_on": [],
+        "estimable": true,
+        "blocked_reason": "",
+        "uncertainty": "medium",
+        "provisional": true,
+        "basis": {
+          "kind": "AI_ESTIMATE",
+          "explanation": "単一フォームの暫定幅であり、組込み実績からは按分していない",
+          "source_id": null,
+          "citation": null,
+          "historical_record_ids": []
+        },
+        "effort_unit": "person_day",
+        "optimistic": "2.00",
+        "most_likely": "3.00",
+        "pessimistic": "5.00",
+        "expected": "3.17",
+        "optimistic_exact": "2",
+        "most_likely_exact": "3",
+        "pessimistic_exact": "5",
+        "expected_exact": "3.166666666666666666666666667"
+      }
+    ],
+    "cross_check_only": false,
+    "optimistic": "2.00",
+    "most_likely": "3.00",
+    "pessimistic": "5.00",
+    "expected": "3.17",
+    "optimistic_exact": "2",
+    "most_likely_exact": "3",
+    "pessimistic_exact": "5",
+    "expected_exact": "3.166666666666666666666666667",
+    "primary_basis": "AI_ESTIMATE",
+    "provenance_totals_exact": {
+      "AI_ESTIMATE": "3.166666666666666666666666667"
+    }
+  },
+  "contingency": {
+    "effort": "0.00",
+    "effort_exact": "0",
+    "effort_unit": "person_day",
+    "reason": "",
+    "covered_risk_ids": []
+  },
+  "summary": {
+    "status": "calculated",
+    "reason": "主方式はWBSの三点見積もりです。補助の実績見積もりは加算していません。",
+    "effort_unit": "person_day",
+    "optimistic": "2.00",
+    "most_likely": "3.00",
+    "pessimistic": "5.00",
+    "expected": "3.17",
+    "contingency": "0.00",
+    "planned": "3.17",
+    "optimistic_exact": "2",
+    "most_likely_exact": "3",
+    "pessimistic_exact": "5",
+    "expected_exact": "3.166666666666666666666666667",
+    "contingency_exact": "0",
+    "planned_exact": "3.166666666666666666666666667",
+    "planned_differs_from_expected": false,
+    "planned_difference_reason": "",
+    "primary_basis": "AI_ESTIMATE",
+    "rounding": {
+      "mode": "ROUND_HALF_UP",
+      "effort_places": 2,
+      "money_places": 2,
+      "note": "合計は丸める前の値を加算し、最後に一度だけ丸めます。"
+    }
+  },
+  "cost": {
+    "status": "not_calculated",
+    "reason": "人日単価または人時単価が指定されていません。"
+  },
+  "schedule": {
+    "status": "not_calculated",
+    "reason": "稼働人数または稼働率が指定されていません。工数÷人数の確定期間は出しません。",
+    "limitations": [
+      "タスク依存を考慮したクリティカルパスではありません。",
+      "レビュー待ちや外部回答待ちを含みません。",
+      "非稼働日は calendar_factor を指定した場合だけ、その仮定として含みます。",
+      "確定した開発期間ではありません。"
+    ]
+  },
+  "warnings": [
+    "実績に架空データが含まれます。本番の見積根拠にしないでください。",
+    "主方式の工数にはAIによる暫定推定が含まれます。精度が高い見積もりではありません。"
+  ],
+  "unestimated_items": []
+}

@@ -1,0 +1,23 @@
+{
+  "fictional": true,
+  "note": "書式見本。実在の案件、顧客、個人を含まない。見積もりの入力に使わない。",
+  "records": [
+    {
+      "project_id": "SAMPLE-001",
+      "project_type": "new_web_app",
+      "project_scope": "new",
+      "technology_stack": ["python", "fastapi"],
+      "work_categories": ["implementation", "test"],
+      "estimated_effort": "20",
+      "actual_effort": "24",
+      "effort_unit": "person_day",
+      "team_size": "2",
+      "duration": "15",
+      "duration_unit": "calendar_day",
+      "completion_date": "2024-06-30",
+      "size": {"kind": "feature_count", "value": "5"},
+      "fictional": true,
+      "notes": "架空の書式見本"
+    }
+  ]
+}

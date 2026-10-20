@@ -1,0 +1,57 @@
+{
+  "fictional": true,
+  "note": "ケースBの架空実績。実在の案件ではない。",
+  "records": [
+    {
+      "project_id": "DEMO-001",
+      "project_type": "new_web_app",
+      "project_scope": "new",
+      "technology_stack": ["python", "fastapi"],
+      "work_categories": ["implementation", "test"],
+      "estimated_effort": "28",
+      "actual_effort": "30",
+      "effort_unit": "person_day",
+      "team_size": "2",
+      "duration": "20",
+      "duration_unit": "calendar_day",
+      "completion_date": "2024-03-31",
+      "size": {"kind": "feature_count", "value": "6"},
+      "fictional": true,
+      "notes": "架空"
+    },
+    {
+      "project_id": "DEMO-002",
+      "project_type": "new_web_app",
+      "project_scope": "new",
+      "technology_stack": ["python", "fastapi"],
+      "work_categories": ["implementation", "test"],
+      "estimated_effort": "45",
+      "actual_effort": "48",
+      "effort_unit": "person_day",
+      "team_size": "3",
+      "duration": "25",
+      "duration_unit": "calendar_day",
+      "completion_date": "2024-09-30",
+      "size": {"kind": "feature_count", "value": "10"},
+      "fictional": true,
+      "notes": "架空"
+    },
+    {
+      "project_id": "DEMO-003",
+      "project_type": "new_web_app",
+      "project_scope": "new",
+      "technology_stack": ["python", "fastapi"],
+      "work_categories": ["implementation", "test"],
+      "estimated_effort": "34",
+      "actual_effort": "36",
+      "effort_unit": "person_day",
+      "team_size": "2",
+      "duration": "22",
+      "duration_unit": "calendar_day",
+      "completion_date": "2025-01-31",
+      "size": {"kind": "feature_count", "value": "8"},
+      "fictional": true,
+      "notes": "架空"
+    }
+  ]
+}
