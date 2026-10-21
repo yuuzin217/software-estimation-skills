@@ -20,6 +20,28 @@
 - 資料間で内容が矛盾する場合は勝手に片方を正本とせず、矛盾する資料と判断待ち事項を明記する。重複要件は同じ要件IDに統合し、どの資料に基づくか残す。
 - 算定に必要な重要資料が未読なら、全資料を確認済みと報告しない。`scope.unknowns` に見積もりへの影響と再確認が必要な点を残す。
 
+## 重要資料の確認状態（必須の安全ゲート）
+
+資料フォルダ入力で作る `request.json` には `source_review` を**必ず**追加する。
+
+```json
+"source_review": {
+  "status": "incomplete",
+  "blockers": [
+    "design/screens.pdf の画面仕様を読めず、必要な機能・工程を網羅できない",
+    "requirements.md と api/openapi.yaml の認可要件が矛盾し、作業範囲が確定しない"
+  ]
+}
+```
+
+- `complete` は、見積もり対象の機能・非機能を確定するための**重要資料を確認済み**で、重大な矛盾・見積範囲の不明点が残っていない場合に限る。この場合 `blockers: []` とする。単にフォルダ走査が終了したことを `complete` の根拠にしない。
+- 読み取れない重要資料、重要な範囲不明、要件に影響する矛盾、読めた部分だけではWBSの網羅性を保証できない場合は `incomplete` とし、`blockers` に**理由を1件以上**記録する。対象外や影響のない未読資料は `sources.md` へ理由を残し、ただちに `incomplete` とする必要はない。
+- `scope.unknowns` は確認待ち事項の説明用であり、**単独では網羅性を制限しない**。必ず `source_review` に重大な未確認事項を反映する。
+- エンジンは `incomplete` なら `coverage.status=partial` として、historical方式も含め全体の費用・期間を表示しない。工数は確認済み範囲の暫定値として示す。`complete` でもWBSが不完全ならcold-startの網羅性は `partial` になる。
+- `source_review` はエージェントによる宣言であり、**実際にファイルを読んだことをエンジンが自動検証する仕組みではない**。内容確認の証拠は `sources.md` に残す。
+
+`--require-source-review` を付け、宣言の省略による誤った全体判定を拒否する。古い個別JSONのCLI利用では、このフラグは不要。
+
 ## 3. WBSと計算用JSON
 
 1. `assets/request.minimal.json` を参考に、機能・非機能・対象外・未確定事項・前提を整理し、要件ごとに安定したIDを付ける。
@@ -39,6 +61,7 @@
 ```bash
 python -m estimator calculate \
   --input .estimates/project-docs/request.json \
+  --require-source-review \
   --json-output .estimates/project-docs/estimate.json \
   --output .estimates/project-docs/estimate.md \
   --csv-output .estimates/project-docs/wbs.csv
