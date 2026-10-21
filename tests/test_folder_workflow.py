@@ -79,7 +79,7 @@ class SourceReviewTest(unittest.TestCase):
         self.assertEqual(result["coverage"]["status"], "complete")
         self.assertEqual(result["source_review"]["status"], "complete")
         self.assertEqual(result["cost"]["status"], "calculated")
-        self.assertIn(result["schedule"]["status"], {"calculated", "provisional"})
+        self.assertEqual(result["schedule"]["status"], "provisional_lower_bound")
 
     def test_invalid_review_declaration_is_rejected(self) -> None:
         for review in (
