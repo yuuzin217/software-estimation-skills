@@ -126,7 +126,7 @@
       ],
       "name": "レスポンシブ対応",
       "description": "PCとスマートフォンで操作できる",
-      "phase": "ui_design",
+      "phase": "ui_implementation",
       "estimable": true,
       "optimistic": "1",
       "most_likely": "2",
