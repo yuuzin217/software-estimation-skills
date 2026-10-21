@@ -120,7 +120,9 @@ def calculate(data: dict, *, base_dir: Path | None = None) -> dict:
         Decimal(hours) if hours else None,
     )
     if not coverage["is_total_estimate"]:
-        reason = "資料の確認またはWBSの網羅性が不完全なため、対象全体の費用・期間は算出しません。"
+        reason = ("重要資料の確認が不完全なため、対象全体の費用・期間は算出しません。"
+                  if source_review["status"] == "incomplete" else
+                  "WBSの網羅性が不完全なため、対象全体の費用・期間は算出しません。")
         cost = {"status": "not_calculated", "reason": reason}
         schedule = {"status": "not_calculated", "reason": reason}
     return _present(
@@ -594,8 +596,9 @@ def _estimate_coverage(scope: dict, wbs_summary: dict, method: dict, historical:
         "status": status,
         "basis": basis,
         "is_total_estimate": is_total,
-        "source_review_status": source_review["status"],
-        "source_review_blockers": source_review["blockers"],
+        **({"source_review_status": source_review["status"],
+            "source_review_blockers": source_review["blockers"]}
+           if source_review["status"] != "not_assessed" else {}),
         "wbs_status": wbs_status,
         "required_requirement_ids": required_ids,
         "mapped_requirement_ids": mapped_ids,
@@ -674,7 +677,7 @@ def _warnings(
             details.append("WBS未対応要件: " + ", ".join(coverage["uncovered_requirement_ids"]))
         if coverage["unestimated_wbs_ids"]:
             details.append("未算定WBS: " + ", ".join(coverage["unestimated_wbs_ids"]))
-        if coverage["source_review_blockers"]:
+        if coverage.get("source_review_blockers"):
             details.append("資料未確認・未解決: " + ", ".join(coverage["source_review_blockers"]))
         suffix = "（" + "、".join(details) + "）" if details else ""
         warnings.append("網羅性が部分的です。工数は全体の確定値ではありません。費用・期間も算出していません。" + suffix)
@@ -728,7 +731,7 @@ def _present(
         "scope": scope,
         "assumptions": assumptions,
         "risks": risks,
-        "source_review": source_review,
+        **({"source_review": source_review} if source_review["status"] != "not_assessed" else {}),
         "method": method,
         "history_evaluation": _public_history(evaluation),
         "historical_estimate": _public_historical(historical),
