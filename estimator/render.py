@@ -65,13 +65,15 @@ def render_markdown(result: dict) -> str:
             lines.append(f"- {item['id']} {item['name']}: {item['reason']}")
     lines.append("")
 
-    review = result.get("source_review", {"status": "not_assessed", "blockers": []})
-    lines.extend(["## 資料確認", "", f"確認状況: {review['status']}"])
-    if review["blockers"]:
-        lines.append("重要な未確認・未解決事項:")
-        for blocker in review["blockers"]:
-            lines.append(f"- {blocker}")
-    lines.append("")
+    review = result.get("source_review")
+    if review is not None:
+        lines.extend(["## 資料確認", "", f"確認状況: {review['status']}"])
+    if review is not None:
+        if review["blockers"]:
+            lines.append("重要な未確認・未解決事項:")
+            for blocker in review["blockers"]:
+                lines.append(f"- {blocker}")
+        lines.append("")
 
     coverage = result["coverage"]
     lines.extend(["## 網羅性", "", f"状態: {coverage['status']}。{coverage['note']}"])
