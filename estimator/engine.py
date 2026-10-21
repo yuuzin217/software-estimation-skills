@@ -40,6 +40,7 @@ def calculate(data: dict, *, base_dir: Path | None = None) -> dict:
     scope = _scope(data.get("scope"), bag)
     assumptions = _assumptions(data.get("assumptions", []), bag)
     risks = _risks(data.get("risks", []), bag)
+    source_review = _source_review(data.get("source_review"), bag)
     hours = meta.get("hours_per_person_day") if meta else None
     effort_unit = meta.get("effort_unit") if meta else "person_day"
     history_spec = data.get("history")
@@ -96,7 +97,7 @@ def calculate(data: dict, *, base_dir: Path | None = None) -> dict:
         historical,
         contingency,
     )
-    coverage = _estimate_coverage(scope, wbs_summary, method, historical)
+    coverage = _estimate_coverage(scope, wbs_summary, method, historical, source_review)
     warnings = _warnings(wbs, wbs_summary, evaluation, historical, method, assumptions, risks, contingency, coverage)
     summary = _primary_summary(method, wbs_summary, historical, contingency, effort_unit)
     summary["estimate_scope"] = "project" if coverage["is_total_estimate"] else "partial"
@@ -119,7 +120,7 @@ def calculate(data: dict, *, base_dir: Path | None = None) -> dict:
         Decimal(hours) if hours else None,
     )
     if not coverage["is_total_estimate"]:
-        reason = "WBSの網羅性が不完全なため、対象全体の費用・期間は算出しません。"
+        reason = "資料の確認またはWBSの網羅性が不完全なため、対象全体の費用・期間は算出しません。"
         cost = {"status": "not_calculated", "reason": reason}
         schedule = {"status": "not_calculated", "reason": reason}
     return _present(
@@ -127,6 +128,7 @@ def calculate(data: dict, *, base_dir: Path | None = None) -> dict:
         scope=scope,
         assumptions=assumptions,
         risks=risks,
+        source_review=source_review,
         method=method,
         evaluation=evaluation,
         benchmark=benchmark,
@@ -156,7 +158,33 @@ _ALLOWED_TOP = {
     "target_size",
     "benchmark",
     "method_override",
+    "source_review",
 }
+
+
+def _source_review(value: object, bag: ErrorBag) -> dict:
+    """資料の監査宣言。旧入力との互換性のため、省略時は未評価とする。"""
+    if value is None:
+        return {"status": "not_assessed", "blockers": []}
+    if not isinstance(value, dict):
+        bag.add("source_review はオブジェクトである必要があります。")
+        return {"status": "not_assessed", "blockers": []}
+    unexpected = sorted(set(value) - {"status", "blockers"})
+    if unexpected:
+        bag.add("source_review に未知のキーがあります: " + ", ".join(unexpected))
+    status = value.get("status")
+    if status not in ("complete", "incomplete"):
+        bag.add("source_review.status は complete または incomplete です。")
+        status = "incomplete"
+    blockers = value.get("blockers")
+    if not isinstance(blockers, list) or any(not isinstance(x, str) or not x.strip() for x in blockers):
+        bag.add("source_review.blockers は空でない文字列の配列にしてください。")
+        blockers = []
+    if status == "complete" and blockers:
+        bag.add("source_review.status が complete のとき blockers は空である必要があります。")
+    if status == "incomplete" and not blockers:
+        bag.add("source_review.status が incomplete のときは blockers に未読資料や重要な未解決事項を記録してください。")
+    return {"status": status, "blockers": list(blockers)}
 
 
 def _meta(meta: object, bag: ErrorBag) -> dict | None:
@@ -507,7 +535,7 @@ def _primary_summary(method: dict, wbs_summary: dict, historical: dict, continge
     )
 
 
-def _estimate_coverage(scope: dict, wbs_summary: dict, method: dict, historical: dict) -> dict:
+def _estimate_coverage(scope: dict, wbs_summary: dict, method: dict, historical: dict, source_review: dict) -> dict:
     """WBS coverage is required for cold-start; historical estimates cover the project independently."""
     requirements = scope["functions"] + scope["non_functional"]
     required_ids = [item["id"] for item in requirements]
@@ -558,10 +586,16 @@ def _estimate_coverage(scope: dict, wbs_summary: dict, method: dict, historical:
         is_total = False
         note = "要件とWBSがないため、見積もり範囲の網羅性を評価できません。"
         basis = "wbs"
+    if source_review["status"] == "incomplete":
+        status = "partial"
+        is_total = False
+        note = "重要資料の未読・未解決事項があるため、算定済み工数は部分見積もりとして扱います。"
     return {
         "status": status,
         "basis": basis,
         "is_total_estimate": is_total,
+        "source_review_status": source_review["status"],
+        "source_review_blockers": source_review["blockers"],
         "wbs_status": wbs_status,
         "required_requirement_ids": required_ids,
         "mapped_requirement_ids": mapped_ids,
@@ -640,6 +674,8 @@ def _warnings(
             details.append("WBS未対応要件: " + ", ".join(coverage["uncovered_requirement_ids"]))
         if coverage["unestimated_wbs_ids"]:
             details.append("未算定WBS: " + ", ".join(coverage["unestimated_wbs_ids"]))
+        if coverage["source_review_blockers"]:
+            details.append("資料未確認・未解決: " + ", ".join(coverage["source_review_blockers"]))
         suffix = "（" + "、".join(details) + "）" if details else ""
         warnings.append("網羅性が部分的です。工数は全体の確定値ではありません。費用・期間も算出していません。" + suffix)
     elif coverage["basis"] == "historical" and coverage["wbs_status"] != "complete":
@@ -672,6 +708,7 @@ def _present(
     scope: dict,
     assumptions: list[dict],
     risks: list[dict],
+    source_review: dict,
     method: dict,
     evaluation: dict,
     benchmark: dict,
@@ -691,6 +728,7 @@ def _present(
         "scope": scope,
         "assumptions": assumptions,
         "risks": risks,
+        "source_review": source_review,
         "method": method,
         "history_evaluation": _public_history(evaluation),
         "historical_estimate": _public_historical(historical),
