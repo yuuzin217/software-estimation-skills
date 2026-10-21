@@ -24,6 +24,7 @@ def main(argv: list[str] | None = None) -> int:
     calc.add_argument("--output", help="Markdownの出力先。省略時は標準出力")
     calc.add_argument("--json-output", help="機械可読JSONの出力先")
     calc.add_argument("--csv-output", help="WBS明細CSVの出力先")
+    calc.add_argument("--require-source-review", action="store_true", help="資料フォルダ入力ではsource_reviewの明示を必須にする")
 
     history = sub.add_parser("validate-history", help="実績CSV/JSONの品質だけを確認する")
     history.add_argument("--input", required=True)
@@ -56,6 +57,8 @@ def main(argv: list[str] | None = None) -> int:
 def _calculate(args: argparse.Namespace) -> int:
     input_path = Path(args.input)
     data = json.loads(input_path.read_text(encoding="utf-8"))
+    if args.require_source_review and (not isinstance(data, dict) or "source_review" not in data):
+        raise EstimationError(["資料フォルダ見積もりでは source_review を必ず指定してください。"])
     protected_paths = [("依頼JSON", input_path)]
     history_spec = data.get("history") if isinstance(data, dict) else None
     history_path_value = history_spec.get("path") if isinstance(history_spec, dict) else None

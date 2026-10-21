@@ -1,0 +1,161 @@
+{
+  "schema_version": "1.0",
+  "meta": {
+    "system_name": "タスク管理ミニアプリ（演習用）",
+    "purpose": "フォルダ資料由来の見積もり後工程スモークテスト",
+    "estimation_date": "2026-10-21",
+    "input_summary": "examples/folder-input-demo の requirements.md と architecture.md を確認。重要事項：認証基盤と受入条件が未確定。",
+    "effort_unit": "person_day"
+  },
+  "scope": {
+    "functions": [
+      {
+        "id": "F-001",
+        "name": "タスク作成・更新・削除",
+        "description": "タスクを登録・変更・削除できる"
+      },
+      {
+        "id": "F-002",
+        "name": "タスク一覧・状態フィルタ",
+        "description": "完了／未完了の一覧を表示する"
+      },
+      {
+        "id": "F-003",
+        "name": "期限設定",
+        "description": "タスクに期限を設定する"
+      }
+    ],
+    "non_functional": [
+      {
+        "id": "NF-001",
+        "name": "レスポンシブ対応",
+        "description": "PCとスマートフォンで操作できる"
+      },
+      {
+        "id": "NF-002",
+        "name": "データアクセス制御",
+        "description": "認証済み利用者だけが自分のタスクを閲覧・編集できる"
+      }
+    ],
+    "out_of_scope": [
+      "課金機能",
+      "他ユーザーとの共有"
+    ],
+    "unknowns": [
+      "認証基盤とユーザー登録の方法",
+      "対応ブラウザーとアクセシビリティ基準",
+      "データ移行の有無"
+    ]
+  },
+  "source_review": {
+    "status": "incomplete",
+    "blockers": [
+      "認証方式と受入条件が未確定のため、関連工数を全体値と断定できない"
+    ]
+  },
+  "assumptions": [
+    {
+      "id": "A-001",
+      "statement": "タスク管理の演習用暫定三点工数を利用する",
+      "impact": "実案件には転用不可"
+    }
+  ],
+  "risks": [],
+  "wbs": [
+    {
+      "id": "WBS-001",
+      "requirement_ids": [
+        "F-001"
+      ],
+      "name": "タスク作成・更新・削除",
+      "description": "タスクを登録・変更・削除できる",
+      "phase": "implementation",
+      "estimable": true,
+      "optimistic": "1",
+      "most_likely": "2",
+      "pessimistic": "4",
+      "uncertainty": "high",
+      "provisional": true,
+      "basis": {
+        "kind": "AI_ESTIMATE",
+        "explanation": "演習用の仮定であり生産性実績ではない"
+      }
+    },
+    {
+      "id": "WBS-002",
+      "requirement_ids": [
+        "F-002"
+      ],
+      "name": "タスク一覧・状態フィルタ",
+      "description": "完了／未完了の一覧を表示する",
+      "phase": "implementation",
+      "estimable": true,
+      "optimistic": "1",
+      "most_likely": "2",
+      "pessimistic": "4",
+      "uncertainty": "high",
+      "provisional": true,
+      "basis": {
+        "kind": "AI_ESTIMATE",
+        "explanation": "演習用の仮定であり生産性実績ではない"
+      }
+    },
+    {
+      "id": "WBS-003",
+      "requirement_ids": [
+        "F-003"
+      ],
+      "name": "期限設定",
+      "description": "タスクに期限を設定する",
+      "phase": "implementation",
+      "estimable": true,
+      "optimistic": "1",
+      "most_likely": "2",
+      "pessimistic": "4",
+      "uncertainty": "high",
+      "provisional": true,
+      "basis": {
+        "kind": "AI_ESTIMATE",
+        "explanation": "演習用の仮定であり生産性実績ではない"
+      }
+    },
+    {
+      "id": "WBS-004",
+      "requirement_ids": [
+        "NF-001"
+      ],
+      "name": "レスポンシブ対応",
+      "description": "PCとスマートフォンで操作できる",
+      "phase": "ui_implementation",
+      "estimable": true,
+      "optimistic": "1",
+      "most_likely": "2",
+      "pessimistic": "4",
+      "uncertainty": "high",
+      "provisional": true,
+      "basis": {
+        "kind": "AI_ESTIMATE",
+        "explanation": "演習用の仮定であり生産性実績ではない"
+      }
+    },
+    {
+      "id": "WBS-005",
+      "requirement_ids": [
+        "NF-002"
+      ],
+      "name": "データアクセス制御",
+      "description": "認証済み利用者だけが自分のタスクを閲覧・編集できる",
+      "phase": "system_test",
+      "estimable": true,
+      "optimistic": "1",
+      "most_likely": "2",
+      "pessimistic": "4",
+      "uncertainty": "high",
+      "provisional": true,
+      "basis": {
+        "kind": "AI_ESTIMATE",
+        "explanation": "演習用の仮定であり生産性実績ではない"
+      }
+    }
+  ]
+}

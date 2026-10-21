@@ -54,6 +54,45 @@ cd software-estimation-skills
 python -m estimator --help
 ```
 
+## Estimate directly from a documentation folder (recommended)
+
+Put your requirements, screen specifications, architecture diagrams, API specifications, and other project documentation in one folder. **Give the folder path to Codex or Cursor** to request an estimate—there is no need to prepare the calculator's JSON input yourself.
+
+For example, open this repository in Codex and ask:
+
+```text
+Use the software-estimation skill to estimate development effort from
+/Users/me/work/project-docs/.
+Do not modify the source documents. Provide the estimate and a source inventory.
+```
+
+To try this workflow without your own documents, use the fictional folder `examples/folder-input-demo/`:
+
+```text
+Use software-estimation to estimate examples/folder-input-demo/.
+```
+
+The agent inventories readable files recursively, identifies requirements and uncertainty, and prepares `request.json`. **Python remains responsible for the calculations.** By default, generated artifacts go into this repository (not into the supplied documentation folder):
+
+```text
+.estimates/<source-folder-name>/
+├── request.json     # Structured input drafted by the agent
+├── sources.md       # Document inventory, citations, conflicts, unread sources
+├── estimate.json    # Canonical estimate result
+├── estimate.md      # Human-readable estimate report
+└── wbs.csv          # WBS details
+```
+
+`.estimates/` is excluded from Git. Existing outputs are preserved unless the user requests an overwrite. The source folder is treated as read-only; sensitive data must not be copied into generated artifacts.
+
+**Requirements and limitations:** The agent must have access to the source folder and this repository's `estimator` package. Reading PDFs, Word/Excel files, scans, and diagrams depends on what the agent environment can actually read. Inaccessible or unsupported files must be disclosed rather than treated as reviewed. Uncertain requirements stay explicit; estimates are not guaranteed.
+
+**Source-review safety gate:** Agents must provide `source_review` in the generated `request.json`, with `status: complete/incomplete` and `blockers`. If critical documentation is unreadable, or unresolved contradictions affect the project scope, use `incomplete`. The calculator labels even historical estimates as **partial**, and withholds project-wide cost and duration. Use `--require-source-review` for folder-based runs to reject missing declarations. The agent's `sources.md` records the reading evidence; Python cannot verify that the documents were actually read.
+
+**Verification boundary:** `tests/test_folder_workflow.py` validates post-extraction processing from a **prestructured example JSON** through the CLI and all five files. A live Codex/Cursor run extracting requirements from source documents still needs separate verification.
+
+**Note:** `python -m estimator calculate --input /path/to/folder` is **not** supported. Folder discovery and extraction are done by the agent, which passes the generated `request.json` to the existing Python CLI. See the [folder input workflow](.agents/skills/software-estimation/references/folder-input.md) (Japanese) for the detailed procedure.
+
 ## Using the skills in Cursor
 
 The repository places each `SKILL.md` under `.agents/skills/`, following [Cursor's Agent Skills documentation](https://cursor.com/docs/skills). In Cursor, ask the agent to estimate a Markdown/text requirement specification or select the skill from the `/` menu when available.

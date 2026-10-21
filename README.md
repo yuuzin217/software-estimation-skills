@@ -54,6 +54,45 @@ cd software-estimation-skills
 python -m estimator --help
 ```
 
+## 資料フォルダを指定して見積もる（おすすめ）
+
+要件定義書や設計書を1つのフォルダにまとめておけば、**Codex／Cursorへフォルダパスだけを指定して**見積もりを依頼できます。ユーザーが計算用JSONを手動で書く必要はありません。
+
+例えば、リポジトリをCodexで開いて次のように依頼します。
+
+```text
+software-estimation Skillを使って、
+/Users/me/work/project-docs/ にある資料から工数を見積もってください。
+資料は変更せず、見積もり結果と参照資料の一覧を出力してください。
+```
+
+このリポジトリだけで試す場合は、架空の資料フォルダ `examples/folder-input-demo/` を指定できます。
+
+```text
+software-estimation Skillで examples/folder-input-demo/ を見積もってください。
+```
+
+エージェントがフォルダ内の資料を再帰的に確認し、要件・非機能要件・不明点・根拠を整理して `request.json` を作成します。工数計算は従来どおりPythonが実行します。
+
+既定の保存場所（指定資料フォルダは変更しません）：
+
+```text
+.estimates/<資料フォルダ名>/
+├── request.json     # エージェントが作成した計算入力
+├── sources.md       # 参照資料の一覧・確認状況・矛盾・未確認事項
+├── estimate.json    # 正本
+├── estimate.md      # レポート
+└── wbs.csv          # WBS明細
+```
+
+`.estimates/` はGitから除外しています。既存の結果は、依頼がない限り上書きしません。**必要条件：** エージェントが指定フォルダを読み取れること、計算エンジンのあるこのリポジトリを利用できること。PDF・Word・Excel・図表の読み取りはエージェント環境の対応機能に依存し、未読資料は明示します。秘密情報を成果物に転記しません。
+
+**資料確認の安全策：** エージェントは生成する `request.json` に `source_review`（`status: complete/incomplete` と `blockers`）を必ず記録します。重要資料を読めない・見積もり範囲に影響する矛盾が残る場合は `incomplete` とし、cold-start／historicalいずれも工数を部分見積もりとして表示し、対象全体の費用・期間を算出しません。計算時は `--require-source-review` を指定して申告の省略を防ぎます。`sources.md` の記録が実際の読み取り証跡であり、Pythonは資料を読んだ事実自体を保証しません。
+
+**検証範囲：** `tests/test_folder_workflow.py` では資料フォルダから**構造化済みの演習用JSONを使用**して計算・5成果物を確認します。自然文資料からJSONを作るCodex／Cursorの実機E2Eは別途検証が必要です。
+
+**重要：** `python -m estimator calculate --input /path/to/folder` は未対応です。フォルダ読取・要件抽出はCodex／Cursorが担当し、Pythonにはエージェントが生成した `request.json` を渡します。詳細は[資料フォルダ入力ワークフロー](.agents/skills/software-estimation/references/folder-input.md)を参照してください。
+
 ## Cursorでの利用方法
 
 Cursorのドキュメントでは、プロジェクトの `.agents/skills/` にある `SKILL.md` を Agent Skills として検出し、チャットの `/` からSkill名を選べると説明されています。このリポジトリはその配置です。
